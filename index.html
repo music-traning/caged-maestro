@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAGED MAESTRO: Real Book Edition v2.1</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Jazz Club Palette */
+            --bg: #121214;
+            --card: #1c1c1f;
+            --primary: #c5a059; /* Brass Gold */
+            --primary-dim: #8a6d3b;
+            --text: #e0e0e0;
+            --text-muted: #888888;
+            --accent: #95353a; /* Velvet Red */
+            --success: #4a8f6d; /* Muted Green */
+            --info: #4a6fa5;   /* Muted Blue */
+            
+            --font-main: 'Montserrat', sans-serif;
+            --font-serif: 'Playfair Display', serif;
+            
+            --radius: 12px;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.5);
+            --shadow-glow: 0 0 20px rgba(197, 160, 89, 0.15);
+        }
+
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            /* Smoky spotlight effect */
+            background-image: radial-gradient(circle at 50% 0%, #2a2a30 0%, #0d0d0f 70%);
+        }
+
+        .container {
+            background-color: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 0;
+            margin-top: 1rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 90vh;
+        }
+
+        .content-wrap { flex: 1; }
+
+        /* TYPOGRAPHY */
+        .app-title {
+            font-family: var(--font-serif);
+            font-size: clamp(2.5rem, 8vw, 4rem); 
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin: 2rem 0 0.5rem 0;
+            text-shadow: var(--shadow-glow);
+            font-style: italic;
+        }
+        .app-subtitle {
+            font-family: var(--font-main);
+            font-size: 1rem;
+            letter-spacing: 4px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+
+        /* DASHBOARD & STATS */
+        .dashboard-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 2rem; 
+            padding: 0 20px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.03); 
+            padding: 15px; 
+            border-radius: var(--radius); 
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: transform 0.2s, border-color 0.2s;
+            position: relative;
+        }
+        .stat-card:hover { transform: translateY(-2px); border-color: var(--primary-dim); }
+        .stat-label { font-size: 0.7rem; color: var(--primary); letter-spacing: 1px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; font-family: var(--font-main); }
+        .stat-val { font-size: 1.5rem; font-weight: 700; color: #fff; font-family: var(--font-serif); }
+        .stat-val.gold { color: var(--primary); text-shadow: 0 0 10px rgba(197,160,89,0.3); }
+
+        .rank-progress-container { width: 100%; height: 4px; background: #333; margin-top: 8px; border-radius: 2px; overflow: hidden; }
+        .rank-progress-bar { height: 100%; background: var(--primary); transition: width 0.5s ease; }
+        .rank-next-info { font-size: 0.6rem; color: #666; margin-top: 4px; }
+
+        .streak-badge {
+            position: absolute; top: 10px; right: 20px;
+            display: flex; align-items: center; gap: 5px;
+            background: rgba(197, 160, 89, 0.1); padding: 5px 12px; border-radius: 20px;
+            border: 1px solid var(--primary-dim);
+        }
+        .streak-count { font-weight: bold; color: var(--primary); }
+
+        /* SUMMARY CARDS (NEW) */
+        .summary-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+        }
+        .summary-item {
+            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; text-align: center;
+        }
+        .summary-label { font-size: 0.7rem; color: #888; display: block; }
+        .summary-value { font-size: 1.1rem; color: #fff; font-weight: bold; font-family: var(--font-serif); }
+
+        /* DAILY MISSION */
+        .daily-mission-box {
+            background: linear-gradient(90deg, rgba(74, 111, 165, 0.1) 0%, transparent 100%);
+            border-left: 3px solid var(--info);
+            margin: 0 20px 20px 20px; padding: 15px; text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
+            border-radius: 4px;
+        }
+        .mission-title { font-size: 0.75rem; color: var(--info); font-weight: bold; margin-bottom: 4px; letter-spacing: 1px;}
+        .mission-desc { font-size: 0.9rem; font-family: var(--font-main); font-weight: bold; }
+        .mission-progress { font-family: var(--font-main); font-size: 0.8rem; color: #666; font-weight: bold; }
+        .mission-complete { color: var(--success); }
+
+        /* BUTTONS */
+        .btn { 
+            border: none; border-radius: 50px; cursor: pointer; font-weight: 600; margin: 8px; 
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            position: relative; overflow: hidden; font-family: var(--font-main); letter-spacing: 1px;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { 
+            background: var(--primary); color: #000; padding: 1rem 3rem; font-size: 1.1rem; 
+            box-shadow: 0 5px 20px rgba(197, 160, 89, 0.2);
+        }
+        .btn-primary:hover { background: #d4b06a; box-shadow: 0 8px 25px rgba(197, 160, 89, 0.3); transform: translateY(-2px); }
+        .btn-secondary { background: transparent; color: var(--text-muted); padding: 0.6rem 1.5rem; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-secondary:hover { border-color: var(--text); color: var(--text); background: rgba(255,255,255,0.05); }
+        .btn-special {
+            background: linear-gradient(135deg, #2a2a30 0%, #1c1c1f 100%);
+            border: 1px solid rgba(255,255,255,0.1); color: var(--primary); padding: 0.8rem 2rem;
+        }
+        .btn-special:hover { border-color: var(--primary); box-shadow: 0 0 15px rgba(197,160,89,0.1); }
+        .btn-icon { background: transparent; color: var(--text-muted); font-size: 1.2rem; padding: 8px; border-radius: 50%; }
+        .btn-icon:hover { color: var(--primary); background: rgba(197, 160, 89, 0.1); }
+        .btn-toggle { background: #161618; border: 1px solid #333; color: #666; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; }
+        .btn-toggle.active { background: #1c1c1f; border-color: var(--success); color: var(--success); }
+
+        /* SELECTORS */
+        .selector-section { margin: 20px 20px; text-align: left; position: relative; }
+        .section-label { color: var(--primary-dim); font-size: 0.7rem; font-weight: bold; margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+        .grid-select { display: grid; gap: 8px; }
+        .grid-6 { grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .select-item { 
+            background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #666; padding: 10px 5px; border-radius: 8px; 
+            font-weight: 500; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; text-align: center;
+        }
+        .select-item:hover { background: rgba(255,255,255,0.05); color: #bbb; }
+        .select-item.active { background: rgba(197, 160, 89, 0.1); border-color: var(--primary); color: var(--primary); font-weight: bold; }
+
+        /* SEARCH BAR */
+        .search-box {
+            width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            color: #fff; font-family: var(--font-main); font-size: 1rem; outline: none;
+            margin-bottom: 15px; transition: border-color 0.3s;
+        }
+        .search-box:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
+        .song-list-container { max-height: 60vh; overflow-y: auto; padding-right: 5px; }
+        .song-list-container::-webkit-scrollbar { width: 6px; }
+        .song-list-container::-webkit-scrollbar-track { background: #111; }
+        .song-list-container::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+        /* GAME UI */
+        .game-header { 
+            display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; 
+            background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+        .rank-display { font-family: var(--font-serif); font-weight: 700; color: var(--primary); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .score-live { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 700; color: #fff; }
+        .combo-live { text-align: right; }
+        .combo-val { font-size: 1.2rem; font-weight: 900; color: #d946ef; display: block; line-height: 1; }
+        .combo-label { font-size: 0.6rem; color: #fff; background: rgba(217, 70, 239, 0.2); padding: 2px 6px; border-radius: 3px; }
+
+        .mission-display {
+            background: #161618; padding: 1.5rem; margin: 1rem 20px; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05);
+            position: relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
+        }
+        
+        .song-progress-wrap { margin-bottom: 15px; }
+        .song-info-bar { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .song-progress-track { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; }
+        .song-progress-fill { height: 100%; background: var(--info); transition: width 0.3s ease; }
+        .next-chord { margin-top: 15px; font-size: 0.9rem; color: #666; font-style: italic; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+        .next-chord span { color: #fff; font-weight: bold; font-family: var(--font-serif); margin-left: 5px; }
+
+        .chord-main { font-family: var(--font-serif); font-size: 3.5rem; font-weight: 400; color: #fff; line-height: 1; margin: 10px 0; }
+        .target-sub { font-size: 1.5rem; color: var(--accent); font-weight: 700; margin-top: 10px; font-family: var(--font-serif); font-style: italic; }
+        .target-sub span { color: var(--text-muted); font-size: 0.9rem; font-family: var(--font-main); font-style: normal; font-weight: normal; margin-right: 10px;}
+
+        .theory-tip {
+            margin-top: 15px; padding: 10px; background: rgba(74, 111, 165, 0.1); border-radius: 6px;
+            color: #a0aec0; font-size: 0.8rem; text-align: left; display: flex; align-items: center; gap: 10px;
+        }
+
+        .fretboard-wrap { 
+            width: 100%; overflow: hidden; background: #0f0f10; 
+            border-top: 1px solid #333; border-bottom: 1px solid #333;
+            padding: 20px 0; margin-bottom: 1rem; cursor: pointer; display: flex; justify-content: center;
+        }
+        .responsive-svg { width: 100%; height: auto; max-width: 760px; display: block; }
+        .interactive-dot { transition: all 0.2s; cursor: pointer; }
+        .interactive-dot:hover { stroke: white; stroke-width: 2px; filter: drop-shadow(0 0 8px var(--primary)); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px); padding: 20px; }
+        .modal-box { 
+            background: #1c1c1f; width: 100%; max-width: 600px; max-height: 85vh; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1); 
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .modal-header { padding: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: #222; }
+        .modal-body { padding: 1.5rem; overflow-y: auto; text-align: left; }
+        .modal-title { margin: 0; color: var(--primary); font-family: var(--font-serif); font-size: 1.4rem; }
+        
+        .help-section { margin-bottom: 1.5rem; }
+        .help-section h3 { color: #fff; border-bottom: 1px solid var(--primary-dim); padding-bottom: 5px; font-size: 1rem; margin-bottom: 10px; }
+        .help-section p, .help-section li { color: #aaa; font-size: 0.9rem; line-height: 1.6; }
+
+        .tab-nav { display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 1rem; }
+        .tab-btn { flex: 1; background: transparent; border: none; color: #666; padding: 12px; cursor: pointer; font-weight: 600; border-bottom: 2px solid transparent; font-family: var(--font-main); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(197, 160, 89, 0.05); }
+
+        .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; }
+        .badge-item { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; text-align: center; opacity: 0.2; filter: grayscale(1); transition: all 0.5s; }
+        .badge-item.unlocked { opacity: 1; filter: grayscale(0); background: linear-gradient(135deg, rgba(197, 160, 89, 0.1) 0%, transparent 100%); border: 1px solid var(--primary-dim); }
+        
+        .feedback-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.6); z-index: 50; backdrop-filter: blur(2px); border-radius: 1rem; }
+        .fb-text { font-family: var(--font-serif); font-size: 4rem; font-weight: 700; color: #fff; text-shadow: 0 5px 15px rgba(0,0,0,0.5); animation: popIn 0.3s ease-out; }
+        .fb-sub { background: var(--bg); color: var(--primary); padding: 5px 20px; border-radius: 20px; margin-top: 10px; border: 1px solid var(--primary); }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .rank-up-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); z-index: 200;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; cursor: pointer;
+        }
+        .god-rays {
+            position: absolute; top: 50%; left: 50%; width: 200vmax; height: 200vmax;
+            background: conic-gradient(from 0deg, transparent 0deg, rgba(197, 160, 89, 0.2) 20deg, transparent 40deg, rgba(197, 160, 89, 0.2) 60deg, transparent 80deg);
+            transform: translate(-50%, -50%); animation: rotateRays 20s linear infinite; pointer-events: none;
+        }
+        .rank-up-content { z-index: 201; text-align: center; animation: zoomInBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .rank-up-label { font-family: var(--font-serif); font-size: 3rem; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5); letter-spacing: 5px; margin-bottom: 20px; }
+        .rank-up-name { 
+            font-family: var(--font-serif); font-size: 5rem; font-weight: 900; 
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 50%, #fff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 50px var(--primary-dim); margin-bottom: 10px;
+        }
+        .rank-up-sub { color: #888; letter-spacing: 2px; text-transform: uppercase; font-size: 0.9rem; margin-top: 30px; animation: pulse 2s infinite; }
+        @keyframes rotateRays { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes zoomInBounce { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        .help-mark { 
+            display: inline-block; width: 14px; height: 14px; line-height: 14px; 
+            background: #444; color: #fff; border-radius: 50%; 
+            font-size: 10px; text-align: center; cursor: help; margin-left: 5px; 
+        }
+        .help-mark:hover::after {
+            content: attr(data-tooltip);
+            position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            background: #222; padding: 5px 10px; border-radius: 4px; border: 1px solid #444;
+            width: max-content; max-width: 200px; font-size: 0.7rem; color: #eee; z-index: 10;
+            text-transform: none; font-weight: normal; margin-bottom: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .app-footer {
+            padding: 1.5rem; text-align: center; font-size: 0.75rem; color: #444;
+            border-top: 1px solid rgba(255,255,255,0.02); margin-top: auto;
+        }
+        .text-sm { font-size: 0.8rem; color: #888; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        
+    </style>
+</head>
+<body>
+
+<div id="app" class="container">
+    <div class="content-wrap">
+        <div v-if="currentView === 'title'" style="padding: 1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn btn-icon" @click="showHelp = true">❓</button>
+                <div class="streak-badge" v-if="stats.loginStreak > 1">
+                    <span>🔥</span>
+                    <span class="streak-count">{{ stats.loginStreak }} Day Streak</span>
+                </div>
+                <button class="btn btn-icon" @click="showSettings = true">⚙️</button>
+            </div>
+
+            <h1 class="app-title">CAGED<br>MAESTRO</h1>
+            <div class="app-subtitle">ABSOLUTE JAZZ THEORY</div>
+            
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Total Score</span>
+                    <span class="stat-val">{{ stats.totalScore.toLocaleString() }}</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Reputation</span>
+                    <span class="stat-val gold">{{ currentRankInfo.name }}</span>
+                    <div class="rank-progress-container">
+                        <div class="rank-progress-bar" :style="{width: currentRankInfo.progress + '%'}"></div>
+                    </div>
+                    <div class="rank-next-info">Next: {{ currentRankInfo.nextReq.toLocaleString() }} pts</div>
+                </div>
+                <div class="stat-card" @click="showAchievements = true" style="cursor:pointer;">
+                    <span class="stat-label">Awards</span>
+                    <span class="stat-val">{{ unlockedBadgeCount }} / {{ achievements.length }}</span>
+                </div>
+            </div>
+
+            <div class="daily-mission-box" v-if="dailyMission">
+                <div>
+                    <div class="mission-title">今夜のギグ (デイリー)</div>
+                    <div class="mission-desc">{{ dailyMission.desc }}</div>
+                </div>
+                <div :class="['mission-progress', { 'mission-complete': dailyMission.progress >= dailyMission.goal }]">
+                    {{ dailyMission.progress }} / {{ dailyMission.goal }}
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button v-if="srsDueCount > 0" class="btn btn-primary" style="background: var(--accent); color:#fff; box-shadow: 0 5px 20px rgba(149, 53, 58, 0.4);" @click="startGame('srs')">
+                    🧠 復習する ({{ srsDueCount }})
+                </button>
+                <div v-else-if="stats.mistakeLog.length > 0" style="color:#666; font-size:0.8rem; font-style:italic; padding: 1rem;">
+                    Excellent! 復習対象はありません。
+                </div>
+
+                <button class="btn btn-special" @click="showSongSelect = true">
+                    📖 Gig Mode (Real Book)
+                </button>
+            </div>
+
+            <div class="selector-section">
+                <div class="section-label">Key <span style="font-weight:normal; opacity:0.5; text-transform:none;">(Shift+K to toggle)</span></div>
+                <div class="grid-select grid-6">
+                    <div class="select-item" :class="{active: selectedKey === 'ALL'}" @click="selectedKey = 'ALL'">ALL</div>
+                    <div v-for="k in keysList" :key="k" class="select-item" :class="{active: selectedKey === k}" @click="selectedKey = k">{{ k }}</div>
+                </div>
+            </div>
+
+            <div class="selector-section">
+                <div class="section-label">Shape <span class="help-mark" data-tooltip="練習したいCAGEDフォームを選択します">?</span></div>
+                <div class="grid-select grid-6">
+                    <div class="select-item" :class="{active: selectedShape === 'ALL'}" @click="selectedShape = 'ALL'">ALL</div>
+                    <div v-for="s in ['C','A','G','E','D']" :class="['select-item', {active: selectedShape === s}]" @click="selectedShape = s">{{ s }}</div>
+                </div>
+            </div>
+
+            <div class="selector-section">
+                <div class="section-label">Difficulty</div>
+                <div class="grid-select grid-3">
+                    <div class="select-item" :class="{active: difficulty === 'easy'}" @click="difficulty = 'easy'">🔰 Easy</div>
+                    <div class="select-item" :class="{active: difficulty === 'normal'}" @click="difficulty = 'normal'">Normal</div>
+                    <div class="select-item" :class="{active: difficulty === 'hard'}" @click="difficulty = 'hard'">Hard</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" @click="startGame('normal')">Start Session</button>
+            <div style="margin-top: 1rem;">
+                <button class="btn btn-secondary" @click="openAnalysis">📊 Analysis</button>
+            </div>
+        </div>
+
+        <div v-if="showSongSelect" class="modal-overlay" @click.self="showSongSelect = false">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h2 class="modal-title">📖 Real Book ({{ filteredSongs.length }})</h2>
+                    <button class="btn-icon" @click="showSongSelect = false">✕</button>
+                </div>
+                <div class="modal-body" style="padding-top: 0;">
+                    <div style="position:sticky; top:0; background:#1c1c1f; padding-top:1.5rem; z-index:10;">
+                        <input type="text" v-model="searchQuery" class="search-box" placeholder="Search Standards... (e.g. 'Autumn', 'Fly')">
+                    </div>
+                    <div class="song-list-container">
+                        <div class="grid-select" style="grid-template-columns: 1fr;">
+                            <div v-for="song in filteredSongs" :key="song.id" class="select-item" style="text-align:left; padding:15px; display:flex; justify-content:space-between; align-items:center;" @click="startSongMode(song)">
+                                <div style="overflow:hidden;">
+                                    <div style="color:#fff; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ song.title }}</div>
+                                    <div style="font-size:0.75rem; color:#888;">Key: {{ song.key }} / {{ song.chords.length }} Chords</div>
+                                </div>
+                                <span style="font-size:1.2rem; color:var(--primary);">▶</span>
+                            </div>
+                            <div v-if="filteredSongs.length === 0" style="padding:20px; color:#666; font-style:italic;">No songs found matching "{{ searchQuery }}"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-else-if="currentView === 'game'">
+            <div class="game-header">
+                <div class="rank-display">
+                    <span style="font-size:1.2rem; color:#fff;">🎷</span>
+                    <span>{{ currentRankInfo.name }}</span>
+                </div>
+                <div class="score-live">{{ sessionScore.toLocaleString() }}</div>
+                <div class="combo-live" v-if="combo > 0">
+                    <span class="combo-val">{{ combo }}</span>
+                    <span class="combo-label">GROOVE x{{ comboMultiplier }}</span>
+                </div>
+            </div>
+
+            <div style="height:4px; background:rgba(255,255,255,0.1); width:100%;">
+                <div :style="{width: timerWidth + '%', height:'100%', background: timerColor, transition:'width 0.1s linear'}"></div>
+            </div>
+
+            <div class="mission-display">
+                <div v-if="gameMode === 'song'" class="song-progress-wrap">
+                    <div class="song-info-bar">
+                        <span>{{ currentSong.title }}</span>
+                        <span>Bar {{ songIndex + 1 }} / {{ currentSong.chords.length }}</span>
+                    </div>
+                    <div class="song-progress-track">
+                        <div class="song-progress-fill" :style="{width: ((songIndex + 1) / currentSong.chords.length * 100) + '%'}"></div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; color:#666; font-size:0.7rem; font-weight:bold; letter-spacing:1px; margin-bottom:10px;">
+                    <span>TARGET CHORD</span>
+                    <span v-if="gameMode !== 'song'">KEY: {{ currentQuestion.keyInfo }}</span>
+                </div>
+                
+                <div class="chord-main">{{ currentQuestion.chordName }}</div>
+                <div class="target-sub"><span>ターゲット:</span> {{ currentQuestion.targetDegreeName }}</div>
+                
+                <div v-if="gameMode === 'song' && nextChordName" class="next-chord">
+                    Next: <span>{{ nextChordName }}</span>
+                </div>
+                
+                <div v-if="settings.showTheory && theoryTip" class="theory-tip">
+                    <span style="font-size:1.2rem;">💡</span>
+                    <span>{{ theoryTip }}</span>
+                </div>
+
+                <div v-if="feedback.msg" class="feedback-overlay">
+                    <div class="fb-text" :style="{color: feedback.color}">{{ feedback.msg }}</div>
+                    <div class="fb-sub">{{ feedback.sub }}</div>
+                </div>
+            </div>
+
+            <div class="fretboard-wrap">
+                <svg viewBox="0 0 760 200" preserveAspectRatio="xMidYMid meet" class="responsive-svg">
+                    <rect x="0" y="0" width="760" height="200" fill="#1a1a1d" />
+                    <line v-for="i in 16" :key="'f'+i" :x1="i * 45" y1="10" :x2="i * 45" y2="190" stroke="#333" stroke-width="2" />
+                    <rect v-if="displayRange.min === 0" x="0" y="10" width="6" height="180" fill="#222" />
+                    <circle v-for="p in [3,5,7,9,12,15]" :cx="p * 45 - 22.5" cy="100" r="5" fill="#2a2a2a" />
+                    <circle v-if="displayRange.max >= 12" cx="517.5" cy="55" r="5" fill="#2a2a2a" />
+                    <circle v-if="displayRange.max >= 12" cx="517.5" cy="145" r="5" fill="#2a2a2a" />
+                    <line v-for="(s, index) in 6" :key="'str'+index" x1="0" :y1="30 + index * 28" x2="760" :y2="30 + index * 28" stroke="#4a4a4e" :stroke-width="index * 0.5 + 1" />
+                    <text v-for="f in 15" :key="'num'+f" :x="(f + displayRange.min) * 45 - 22.5" y="205" text-anchor="middle" fill="#555" font-size="10" font-family="Montserrat">{{ f + displayRange.min }}</text>
+                    <g v-for="(dot, idx) in fretboardDots" :key="'dot'+idx">
+                        <circle v-if="dot.isTarget || dot.isRoot" :cx="(dot.fret - displayRange.min) * 45 - 22.5" :cy="30 + dot.string * 28" :r="14" :fill="dot.isTarget ? 'rgba(239, 68, 68, 0.1)' : 'rgba(197, 160, 89, 0.1)'" />
+                        <circle :cx="(dot.fret - displayRange.min) * 45 - 22.5" :cy="30 + dot.string * 28" :r="dot.r" :fill="dot.fill" :stroke="dot.stroke" :stroke-width="dot.strokeWidth || 2" class="interactive-dot" @click="handleShot(dot)" />
+                        <text v-if="dot.showLabel" :x="(dot.fret - displayRange.min) * 45 - 22.5" :y="30 + dot.string * 28 + 4" text-anchor="middle" :fill="dot.textFill" font-size="10px" font-family="Montserrat" font-weight="bold" pointer-events="none">{{ dot.degree }}</text>
+                    </g>
+                </svg>
+            </div>
+            <div style="text-align:center;">
+                <button class="btn btn-secondary" @click="endSession">End Session (ESC)</button>
+            </div>
+        </div>
+
+        <div v-if="showRankUp" class="rank-up-overlay" @click="showRankUp = false">
+            <div class="god-rays"></div>
+            <div class="rank-up-content">
+                <div class="rank-up-label">RANK UP!</div>
+                <div class="rank-up-name">{{ currentRankInfo.name }}</div>
+                <div style="font-size:2rem;">⭐⭐⭐</div>
+                <div class="rank-up-sub">Click to Continue</div>
+            </div>
+        </div>
+
+        <div v-if="showHelp" class="modal-overlay" @click.self="showHelp = false">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h2 class="modal-title">🎼 Session Guide</h2>
+                    <button class="btn-icon" @click="showHelp = false">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="help-section">
+                        <h3>Game Modes</h3>
+                        <ul style="color:#aaa; padding-left:20px; font-size:0.9rem;">
+                            <li><b>Normal Session</b>: ランダムに出題されるコードに対応します。</li>
+                            <li><b>Gig Mode</b>: 「枯葉」などの実際の曲の進行に合わせて練習します。</li>
+                            <li><b>SRS (復習)</b>: 間違えた問題を、忘れた頃に再出題する科学的なトレーニングです。</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h3>Shortcuts</h3>
+                        <ul style="color:#aaa; padding-left:20px; font-size:0.9rem;">
+                            <li><b>ESC</b>: End Session</li>
+                            <li><b>Shift+K</b>: Toggle Key</li>
+                            <li><b>H</b>: Hint (Easy Mode)</li>
+                            <li><b>N</b>: Skip Chord (Song Mode)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showAnalysis" class="modal-overlay" @click.self="showAnalysis = false">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h2 class="modal-title">📊 Session Analysis</h2>
+                    <button class="btn-icon" @click="showAnalysis = false">✕</button>
+                </div>
+                <div class="tab-nav">
+                    <button class="tab-btn" :class="{active: analysisTab === 'stats'}" @click="analysisTab = 'stats'">History</button>
+                    <button class="tab-btn" :class="{active: analysisTab === 'weakness'}" @click="analysisTab = 'weakness'">Weakness</button>
+                    <button class="tab-btn" :class="{active: analysisTab === 'heatmap'}" @click="analysisTab = 'heatmap'">Heatmap</button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="analysisTab === 'stats'">
+                        <div class="summary-grid">
+                             <div class="summary-item">
+                                <span class="summary-label">Avg. Accuracy</span>
+                                <span class="summary-value">{{ statsOverview.avgAccuracy }}%</span>
+                            </div>
+                             <div class="summary-item">
+                                <span class="summary-label">Songs Cleared</span>
+                                <span class="summary-value">{{ statsOverview.totalSongs }}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Total Attempts</span>
+                                <span class="summary-value">{{ statsOverview.totalAttempts }}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Play Count</span>
+                                <span class="summary-value">{{ statsOverview.totalSessions }}</span>
+                            </div>
+                        </div>
+
+                        <canvas id="scoreChart" height="200"></canvas>
+                        <div style="margin-top:20px;">
+                            <div v-for="(log, i) in playHistory.slice(0, 5)" :key="i" class="row" style="border-bottom:1px solid rgba(255,255,255,0.05); padding:8px 0;">
+                                <span class="text-sm">{{ log.date }}</span>
+                                <div style="text-align:right;">
+                                    <div style="font-family:var(--font-serif); color:#fff;">{{ log.score.toLocaleString() }} pts</div>
+                                    <div style="font-size:0.7rem; color:#666;" v-if="log.accuracy">Acc: {{ log.accuracy }}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="analysisTab === 'weakness'">
+                        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:200px;">
+                                <h4 style="text-align:center; color:#888; font-size:0.8rem;">Degree Accuracy</h4>
+                                <canvas id="degreeChart" height="200"></canvas>
+                            </div>
+                            <div style="flex:1; min-width:200px;">
+                                <h4 style="text-align:center; color:#888; font-size:0.8rem;">Shape Mastery</h4>
+                                <canvas id="shapeChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else>
+                        <h4 style="text-align:center; color:#888; font-size:0.8rem;">Fretboard Accuracy Heatmap</h4>
+                        <p style="font-size:0.7rem; color:#666; text-align:center; margin-bottom:10px;">赤=ミス多発 / 緑=正確 / 黒=データなし</p>
+                        <div style="display:flex; flex-direction:column-reverse; gap:5px;">
+                            <div v-for="s in 6" :key="s" style="display:flex; gap:2px; align-items:center;">
+                                <span style="width:20px; font-size:0.6rem; color:#555;">{{s}}</span>
+                                <div v-for="seg in 5" :key="seg" :style="{
+                                    flex:1, height:'20px', background: getHeatmapColor(s-1, seg),
+                                    borderRadius:'2px', border: '1px solid rgba(0,0,0,0.3)'
+                                }"></div>
+                            </div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:5px; padding-left:25px;">
+                            <span style="font-size:0.6rem; color:#555;">Low Frets (0-3)</span>
+                            <span style="font-size:0.6rem; color:#555;">High Frets (12+)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showSettings" class="modal-overlay" @click.self="showSettings = false">
+            <div class="modal-box" style="max-width:400px;">
+                <div class="modal-header">
+                    <h2 class="modal-title">⚙️ Settings</h2>
+                    <button class="btn-icon" @click="showSettings = false">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <span>🔊 Sound FX</span>
+                        <button class="btn-toggle" :class="{active: settings.sound}" @click="settings.sound = !settings.sound">{{ settings.sound ? 'ON' : 'OFF' }}</button>
+                    </div>
+                    <div class="row">
+                        <span>💡 Theory Tips</span>
+                        <button class="btn-toggle" :class="{active: settings.showTheory}" @click="settings.showTheory = !settings.showTheory">{{ settings.showTheory ? 'ON' : 'OFF' }}</button>
+                    </div>
+                    <div class="row">
+                        <span>⏳ Timer Limit</span>
+                        <button class="btn-toggle" :class="{active: settings.timerEnabled}" @click="settings.timerEnabled = !settings.timerEnabled">{{ settings.timerEnabled ? 'ON' : 'OFF' }}</button>
+                    </div>
+                    <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:20px 0;">
+                    <div style="display:flex; gap:10px; justify-content:center;">
+                        <button class="btn btn-secondary" @click="exportData">Backup</button>
+                        <label class="btn btn-secondary" style="cursor:pointer;">Import<input type="file" style="display:none" @change="importData" accept=".json"></label>
+                    </div>
+                    <div style="text-align:center; margin-top:20px;">
+                        <button class="btn btn-secondary" style="color:var(--accent); border-color:var(--accent);" @click="resetData">Reset Save Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showAchievements" class="modal-overlay" @click.self="showAchievements = false">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h2 class="modal-title">🏆 Awards ({{ unlockedBadgeCount }}/{{ achievements.length }})</h2>
+                    <button class="btn-icon" @click="showAchievements = false">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="badge-grid">
+                        <div v-for="badge in achievements" :key="badge.id" class="badge-item" :class="{unlocked: badge.unlocked}">
+                            <span class="badge-icon" style="font-size:1.5rem;">{{ badge.icon }}</span>
+                            <div class="badge-name" style="font-size:0.6rem; margin-top:5px; color:#ccc;">{{ badge.name }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="app-footer">
+        ©2025 <a href="https://note.com/jazzy_begin" style="color:inherit; text-decoration:none;">buro</a>
+    </footer>
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted, watch, nextTick, reactive } = Vue;
+
+    // --- AUDIO SYSTEM ---
+    class AudioEngine {
+        constructor() { this.ctx = null; this.enabled = true; }
+        init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); }
+        play(freqs, type='sine', dur=0.3, vol=0.1) {
+            if (!this.enabled) return;
+            this.init();
+            const t = this.ctx.currentTime;
+            freqs.forEach((f, i) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type; osc.frequency.value = f;
+                gain.gain.setValueAtTime(0, t + i*0.05);
+                gain.gain.linearRampToValueAtTime(vol, t + i*0.05 + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + i*0.05 + dur);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(t + i*0.05); osc.stop(t + i*0.05 + dur);
+            });
+        }
+        sfxSuccess() { this.play([440, 554, 659], 'sine', 0.5, 0.1); }
+        sfxCombo(count) { let base = 261 + (Math.min(count, 12) * 20); this.play([base, base*1.2], 'triangle', 0.3, 0.1); }
+        sfxFail() { this.play([150, 140], 'sawtooth', 0.4, 0.1); }
+        sfxRankUp() { this.play([261, 329, 392, 523], 'sawtooth', 0.8, 0.1); setTimeout(() => this.play([261, 329, 392, 523, 659, 783], 'square', 1.5, 0.15), 200); } 
+    }
+    const audio = new AudioEngine();
+
+    const DEGREE_EXPLANATIONS = {
+        0: 'Root: コードの土台となる音。', 3: 'Minor 3rd: マイナーコードを決定づける悲しい響き。', 4: 'Major 3rd: メジャーコードを決定づける明るい響き。',
+        5: 'Perfect 4th: サスコードなどで使われる緊張感のある音。', 6: 'Flat 5th: ブルーノート、またはディミニッシュの不安定な音。',
+        7: 'Perfect 5th: コードに力強さと安定を与える音。', 10: 'Minor 7th: ドミナントやマイナーに必須のブルージーな音。', 11: 'Major 7th: 都会的で洗練されたジャズの響き。'
+    };
+
+    // UPDATED ACHIEVEMENTS
+    const ACHIEVEMENT_LIST = [
+        { id: 'first_win', name: 'Debut', icon: '🎫', check: (s) => s.totalScore > 0 },
+        { id: 'score_10k', name: 'Local Hero', icon: '🎩', check: (s) => s.totalScore >= 10000 },
+        { id: 'combo_10', name: 'Flow State', icon: '🌊', check: (s, session) => session.maxCombo >= 10 },
+        { id: 'combo_30', name: 'Virtuoso', icon: '🎷', check: (s, session) => session.maxCombo >= 30 },
+        { id: 'master_c', name: 'C-Shape Master', icon: 'C', check: (s) => (s.shape['C']?.correct || 0) >= 50 },
+        { id: 'song_master', name: 'Real Book Scholar', icon: '📖', check: (s) => (s.completedSongs?.length || 0) >= 10 },
+        { id: 'streak_7', name: 'Weekly Warrior', icon: '🔥', check: (s) => s.loginStreak >= 7 },
+        { id: 'perfect_session', name: 'Flawless', icon: '💎', check: (s, session) => session.perfect10 === true },
+        { id: 'heatmap_pro', name: 'Fretboard Master', icon: '🗺️', check: (s) => {
+             // Simple check: >80% accuracy in total map
+             if (!s.heatmap) return false;
+             let hits=0, total=0;
+             s.heatmap.forEach(r => r.forEach(c => { hits+=c.hits; total+=(c.hits+c.miss); }));
+             return total > 50 && (hits/total) > 0.8;
+        }}
+    ];
+
+    const RANKS = [
+        { name: "Busker", limit: 2000 }, { name: "Club Cat", limit: 10000 }, { name: "Session Pro", limit: 50000 },
+        { name: "Maestro", limit: 200000 }, { name: "Legend", limit: 999999999 }
+    ];
+
+    const parseChordString = (str) => {
+        const match = str.match(/^([A-G][#b]?)(.*)$/);
+        if (!match) return { root:'C', type:'maj7' };
+        const root = match[1]; let type = match[2] || 'maj7';
+        if (type.includes('maj') || type === '') type = 'maj7';
+        else if (type.includes('m7b5') || type.includes('ø')) type = 'm7b5';
+        else if (type.includes('m') || type.includes('-')) type = 'm7';
+        else if (type.includes('7') || type.includes('9') || type.includes('13')) type = '7';
+        else type = 'maj7';
+        return { root, type };
+    };
+
+    const RAW_SONG_DATA = [
+        { t: "Autumn Leaves", k: "Gm", c: "Cm7 F7 Bbmaj7 Ebmaj7 Am7b5 D7 Gm7 Gm7 Cm7 F7 Bbmaj7 Ebmaj7 Am7b5 D7 Gm7 Gm7 Am7b5 D7 Gm7 Gm7 Cm7 F7 Bbmaj7 Ebmaj7 Am7b5 D7 Gm7 Gb7 Fm7 E7 Am7b5 D7 Gm7" },
+        { t: "Fly Me To The Moon", k: "C", c: "Am7 Dm7 G7 Cmaj7 Fmaj7 Bm7b5 E7 Am7 A7 Dm7 G7 Cmaj7 Cmaj7 Bm7b5 E7 Am7 A7 Dm7 G7 Em7 A7 Dm7 G7 Cmaj7 Bm7b5 E7" },
+        { t: "All The Things You Are", k: "Ab", c: "Fm7 Bbm7 Eb7 Abmaj7 Dbmaj7 Dm7 G7 Cmaj7 Cm7 Fm7 Bb7 Ebmaj7 Abmaj7 Am7 D7 Gmaj7 Am7 D7 Gmaj7 Gbm7 B7 Emaj7 C7 Fm7 Bbm7 Eb7 Abmaj7 Dbmaj7 Dbm7 Cm7 Bdim7 Bbm7 Eb7 Abmaj7" },
+        { t: "Blue Bossa", k: "Cm", c: "Cm7 Cm7 Fm7 Fm7 Dm7b5 G7 Cm7 Cm7 Ebm7 Ab7 Dbmaj7 Dbmaj7 Dm7b5 G7 Cm7 Dm7b5 G7" },
+        { t: "Take The A Train", k: "C", c: "Cmaj7 Cmaj7 D7b5 D7b5 Dm7 G7 Cmaj7 Dm7 G7 Cmaj7 Cmaj7 D7b5 D7b5 Dm7 G7 Cmaj7 Gm7 C7 Fmaj7 Fmaj7 Fmaj7 Fmaj7 D7b5 D7b5 Dm7 G7 Cmaj7 Cmaj7 D7b5 D7b5 Dm7 G7 Cmaj7 Cmaj7" },
+        { t: "Satin Doll", k: "C", c: "Dm7 G7 Dm7 G7 Em7 A7 Em7 A7 Dm7 G7 Dm7 G7 Cmaj7 Dm7 G7 Dm7 G7 Dm7 G7 Em7 A7 Em7 A7 Dm7 G7 Dm7 G7 Cmaj7 C7 Fmaj7 Fmaj7 Em7 A7 Am7 D7 Dm7 G7 Dm7 G7 Dm7 G7 Em7 A7 Em7 A7 Dm7 G7 Dm7 G7 Cmaj7" },
+        { t: "Girl From Ipanema", k: "F", c: "Fmaj7 Fmaj7 G7 G7 Gm7 Gb7 Fmaj7 Gb7 Fmaj7 Fmaj7 G7 G7 Gm7 Gb7 Fmaj7 Fmaj7 Gbmaj7 Gbmaj7 B7 B7 Gbm7 Gbm7 D7 D7 Gm7 Gm7 Eb7 Eb7 Am7 D7 Gm7 C7 Fmaj7 Fmaj7 G7 G7 Gm7 Gb7 Fmaj7" },
+        { t: "So What", k: "Dm", c: "Dm7 Dm7 Dm7 Dm7 Dm7 Dm7 Dm7 Dm7 Ebm7 Ebm7 Ebm7 Ebm7 Dm7 Dm7 Dm7 Dm7" },
+        { t: "Summertime", k: "Dm", c: "Dm7 Dm7 Dm7 Dm7 Gm7 Gm7 Dm7 Dm7 E7 Am7 Dm7 Dm7" },
+        { t: "Stella By Starlight", k: "Bb", c: "Em7b5 A7 Cm7 F7 Fm7 Bb7 Ebmaj7 Ab7 Bbmaj7 Em7b5 A7 Dm7 Bbm7 Eb7 Fmaj7 Em7b5 A7 Am7b5 D7 G7 Cm7 Ab7 Bbmaj7 Em7b5 A7 Cm7 F7 Bbmaj7" },
+        { t: "There Will Never Be Another You", k: "Eb", c: "Ebmaj7 Ebmaj7 Dm7b5 G7 Cm7 Cm7 Bbm7 Eb7 Abmaj7 Abmaj7 Db7 Db7 Ebmaj7 Cm7 Fm7 Bb7 Ebmaj7 Dm7b5 G7 Cm7 Cm7 Bbm7 Eb7 Abmaj7 Abmaj7 Db7 Db7 Ebmaj7 Cm7 Fm7 Bb7 Ebmaj7 Ab7 Gm7 C7 Fm7 Bb7 Ebmaj7" },
+        { t: "On Green Dolphin Street", k: "Eb", c: "Ebmaj7 Ebmaj7 Ebmaj7 Ebmaj7 Gbmaj7 Gbmaj7 Gbmaj7 Gbmaj7 Ebmaj7 Ebmaj7 Ebmaj7 Ebmaj7 Gbmaj7 Gbmaj7 Gbmaj7 Gbmaj7 Fm7 Bb7 Ebmaj7 Gm7 C7 Fm7 Bb7 Ebmaj7" },
+        { t: "Confirmation", k: "F", c: "Fmaj7 Em7b5 A7 Dm7 Cm7 F7 Bbmaj7 Am7 D7 G7 Gm7 C7 Fmaj7 Em7b5 A7 Dm7 Cm7 F7 Bbmaj7 Am7 D7 Gm7 C7 Fmaj7 Cm7 F7 Bbmaj7 Bbmaj7 A7 A7 Dm7 D7 G7 G7 Gm7 C7 Fmaj7 Em7b5 A7 Dm7 Cm7 F7 Bbmaj7 Am7 D7 Gm7 C7 Fmaj7" },
+        { t: "Giant Steps", k: "Eb", c: "Bmaj7 D7 Gmaj7 Bb7 Ebmaj7 Am7 D7 Gmaj7 Bb7 Ebmaj7 Gb7 Bmaj7 Fm7 Bb7 Ebmaj7 Am7 D7 Gmaj7 Dbm7 Gb7 Bmaj7 Fm7 Bb7 Ebmaj7 Dbm7 Gb7" },
+        { t: "Oleo", k: "Bb", c: "Bbmaj7 Gm7 Cm7 F7 Bbmaj7 Gm7 Cm7 F7 Em7 A7 Dm7 G7 Cm7 F7 Bbmaj7 Bbmaj7 Gm7 Cm7 F7 Bbmaj7 Gm7 Cm7 F7 Em7 A7 Dm7 G7 Cm7 F7 Bbmaj7 D7 G7 C7 F7 Bbmaj7 Gm7 Cm7 F7 Bbmaj7 Gm7 Cm7 F7 Em7 A7 Dm7 G7 Cm7 F7 Bbmaj7" },
+        { t: "Solar", k: "Cm", c: "Cm7 Cm7 Gm7 C7 Fmaj7 Fmaj7 Fm7 Bb7 Ebmaj7 Ebmaj7 Ebm7 Ab7 Dbmaj7 Dm7b5 G7 Cm7" },
+        { t: "Just Friends", k: "G", c: "Cmaj7 Cmaj7 Cm7 F7 Gmaj7 Gmaj7 Bbm7 Eb7 Am7 D7 Am7 D7 Gmaj7 Em7 Am7 D7 Cm7 F7 Gmaj7 E7 Am7 D7 Gmaj7" },
+        { t: "Days of Wine and Roses", k: "F", c: "Fmaj7 Eb7 D7 D7 Gm7 Bbm7 Fmaj7 Em7 A7 Dm7 G7 Gm7 C7 Am7 D7 Gm7 C7 Fmaj7 Eb7 D7 D7 Gm7 Bbm7 Fmaj7 Em7b5 A7 Dm7 Gm7 Am7b5 D7 Gm7 C7 Fmaj7" },
+        { t: "Wave", k: "D", c: "Dmaj7 Bbm7 A7 Dmaj7 G7 G7 Gmaj7 Gm7 Gb7 B7 E7 Bb7 A7 Dm7 G7 Dmaj7 Dmaj7 Gm7 C7 Fmaj7 Fmaj7 Fm7 Bb7 Ebmaj7 A7 Dm7 G7 Gm7 C7 Fmaj7 Fm7 Bb7 Em7 A7 Dmaj7 Bbm7 A7 Dmaj7 G7 G7 Gmaj7 Gm7 Gb7 B7 E7 Bb7 A7 Dmaj7" },
+        { t: "Body and Soul", k: "Db", c: "Ebm7 Bb7 Ebm7 D7 Dbmaj7 Gb7 Fm7 E7 Ebm7 Bb7 Ebm7 D7 Dbmaj7 Ebm7 Ab7 Dbmaj7 Dmaj7 Em7 A7 Dmaj7 Dm7 G7 Cmaj7 Eb7 Ab7 Dbmaj7" },
+        { t: "Cherokee", k: "Bb", c: "Bbmaj7 Fm7 Bb7 Ebmaj7 Ab7 Bbmaj7 C7 Cm7 F7 Bbmaj7 Fm7 Bb7 Ebmaj7 Ab7 Bbmaj7 C7 Cm7 F7 Bbmaj7 Dbm7 Gb7 Bmaj7 Bmaj7 Bm7 E7 Amaj7 Amaj7 Am7 D7 Gmaj7 Gmaj7 Gm7 C7 Cm7 F7 Bbmaj7 Fm7 Bb7 Ebmaj7 Ab7 Bbmaj7 C7 Cm7 F7 Bbmaj7" },
+        { t: "Donna Lee", k: "Ab", c: "Abmaj7 F7 Bb7 Bb7 Bbm7 Eb7 Abmaj7 Eb7 Abmaj7 F7 Bb7 Bb7 Bb7 Bb7 Bbm7 Eb7 Abmaj7 F7 Bb7 Bb7 C7 C7 Fm7 C7 Fm7 C7b9 Fm7 Abdim7 Abmaj7 F7 Bbm7 Eb7 Abmaj7" },
+        { t: "Four", k: "Eb", c: "Ebmaj7 Ebm7 Ab7 Fm7 Bb7 Gm7b5 C7 Fm7 Abm7 Db7 Ebmaj7 Gbdim7 Fm7 Bb7 Ebmaj7 Ebm7 Ab7 Fm7 Bb7 Gm7b5 C7 Fm7 Abm7 Db7 Ebmaj7 Fm7 Bb7 Ebmaj7" },
+        { t: "I'll Remember April", k: "G", c: "Gmaj7 Gmaj7 Gm7 Gm7 Am7 D7 Bm7 E7 Am7 D7 Am7 D7 Gmaj7 Gmaj7 Bm7b5 E7 Am7 Am7 Cm7 F7 Gmaj7 Gmaj7 Bm7b5 E7 Am7 D7 Gmaj7" },
+        { t: "It Could Happen To You", k: "Eb", c: "Ebmaj7 Gm7b5 C7 Fm7 Am7b5 D7 Ebmaj7 Abmaj7 Gm7 C7 Fm7 Bb7 Ebmaj7 Gm7b5 C7 Fm7 Am7b5 D7 Ebmaj7 Abmaj7 Gm7 C7 Fm7 Bb7 Abmaj7 Gm7 Fm7 Bb7 Ebmaj7" },
+        { t: "Softly, As In A Morning Sunrise", k: "Cm", c: "Cm7 Dm7b5 G7 Cm7 Dm7b5 G7 Cm7 Dm7b5 G7 Cm7 Cm7 Ebmaj7 Fm7 Bb7 Ebmaj7 Dm7b5 G7 Cm7 Dm7b5 G7 Cm7 Dm7b5 G7 Cm7 Dm7b5 G7" },
+        { t: "Song For My Father", k: "Fm", c: "Fm7 Fm7 Eb7 Db7 C7 C7 Fm7 Fm7 Eb7 Db7 C7 C7 Fm7 Eb7 Db7 C7 Fm7" },
+        { t: "St. Thomas", k: "C", c: "Cmaj7 Cmaj7 Em7b5 A7 Dm7 G7 Cmaj7 Cmaj7 Em7b5 A7 Dm7 G7 Cmaj7 Cmaj7 Dm7 G7 Cmaj7 Dm7 G7 Cmaj7 Em7b5 A7 Dm7 G7 Cmaj7" },
+        { t: "Yardbird Suite", k: "C", c: "Cmaj7 Fm7 Bb7 Cmaj7 Bm7b5 E7 Am7 D7 Dm7 G7 Cmaj7 Fm7 Bb7 Cmaj7 Bm7b5 E7 Am7 D7 Dm7 G7 Em7 A7 Dm7 G7 Em7 A7 Dm7 G7 Cmaj7 Fm7 Bb7 Cmaj7 Bm7b5 E7 Am7 D7 Dm7 G7 Cmaj7" },
+        { t: "Tune Up", k: "D", c: "Em7 A7 Dmaj7 Dmaj7 Dm7 G7 Cmaj7 Cmaj7 Cm7 F7 Bbmaj7 Bbmaj7 Em7 A7 Bbmaj7 A7" }
+    ];
+
+    const SONG_BOOK = RAW_SONG_DATA.map(s => ({
+        id: s.t.toLowerCase().replace(/\s/g, '_'),
+        title: s.t,
+        key: s.k,
+        chords: s.c.split(' ').map(str => parseChordString(str))
+    })).sort((a,b) => a.title.localeCompare(b.title));
+
+    // FEEDBACK VARIATIONS
+    const getFeedbackMessage = (combo) => {
+        const messages = {
+            1: ['Nice!', 'Good!', 'Yeah!', 'Sweet!'],
+            5: ['On Fire! 🔥', 'Groovy!', 'Smooth!', 'Cookin\'!'],
+            10: ['Incredible!', 'Legendary!', 'Phenomenal!', 'Master Class! 🎷'],
+            20: ['UNSTOPPABLE! ⚡', 'JAZZ GOD! 👑', 'TRANSCENDENT! ✨']
+        };
+        let tier = 1;
+        if (combo >= 20) tier = 20;
+        else if (combo >= 10) tier = 10;
+        else if (combo >= 5) tier = 5;
+        const pool = messages[tier];
+        return pool[Math.floor(Math.random() * pool.length)];
+    };
+
+    createApp({
+        setup() {
+            // STATE
+            const currentView = ref('title');
+            const showSettings = ref(false);
+            const showAnalysis = ref(false);
+            const showAchievements = ref(false);
+            const showHelp = ref(false); 
+            const showRankUp = ref(false);
+            const showSongSelect = ref(false);
+            const analysisTab = ref('stats');
+            const searchQuery = ref('');
+            
+            // GAME CONFIG
+            const difficulty = ref('normal');
+            const selectedKey = ref('ALL');
+            const selectedShape = ref('ALL');
+            const gameMode = ref('normal'); 
+            
+            // STATS & PROGRESS
+            const stats = reactive({
+                totalScore: 0,
+                mistakeLog: [],
+                playHistory: [],
+                degree: {}, shape: {}, key: {},
+                heatmap: [], // Initialized in loadData
+                completedSongs: [], // New
+                loginStreak: 0, lastLogin: null
+            });
+            const achievements = ref(ACHIEVEMENT_LIST.map(a => ({...a, unlocked: false})));
+            const settings = reactive({ sound: true, showTheory: true, timerEnabled: true });
+            
+            const dailyMission = ref(null);
+            
+            // IN-GAME
+            const sessionScore = ref(0);
+            const combo = ref(0);
+            const maxCombo = ref(0);
+            const perfect10 = ref(false); // Track for achievement
+            const currentQuestion = ref({});
+            const fretboardDots = ref([]);
+            const displayRange = ref({min:0, max:12});
+            const feedback = ref({msg:'', sub:'', color:''});
+            const timerWidth = ref(100);
+            const isProcessing = ref(false);
+            let timerInterval = null;
+            
+            // SONG MODE STATE
+            const currentSong = ref(null);
+            const songIndex = ref(0);
+
+            // COMPUTED
+            const comboMultiplier = computed(() => Math.min(combo.value, 50) || 1);
+            
+            const currentRankInfo = computed(() => {
+                let current = RANKS[0];
+                let next = RANKS[1];
+                for(let i=0; i<RANKS.length-1; i++) {
+                    if (stats.totalScore >= RANKS[i].limit) {
+                        current = RANKS[i+1];
+                        next = RANKS[i+2] || { limit: stats.totalScore * 1.5 };
+                    } else {
+                        current = RANKS[i];
+                        next = RANKS[i+1];
+                        break;
+                    }
+                }
+                const prevLimit = RANKS.indexOf(current) > 0 ? RANKS[RANKS.indexOf(current)-1].limit : 0;
+                const progress = Math.min(100, Math.max(0, ((stats.totalScore - prevLimit) / (current.limit - prevLimit)) * 100));
+                return { name: current.name, progress, nextReq: current.limit };
+            });
+
+            // STATS OVERVIEW COMPUTED
+            const statsOverview = computed(() => {
+                const totalAttempts = Object.values(stats.degree).reduce((a,b) => a + (b.attempts||0), 0);
+                const totalCorrect = Object.values(stats.degree).reduce((a,b) => a + (b.correct||0), 0);
+                const avgAccuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+                const totalSessions = stats.playHistory.length;
+                const totalSongs = stats.completedSongs ? stats.completedSongs.length : 0;
+                return { totalAttempts, avgAccuracy, totalSessions, totalSongs };
+            });
+
+            const filteredSongs = computed(() => {
+                if (!searchQuery.value) return SONG_BOOK;
+                const q = searchQuery.value.toLowerCase();
+                return SONG_BOOK.filter(s => s.title.toLowerCase().includes(q));
+            });
+
+            const nextChordName = computed(() => {
+                if (gameMode.value !== 'song' || !currentSong.value) return null;
+                const nextIdx = (songIndex.value + 1) % currentSong.value.chords.length;
+                const c = currentSong.value.chords[nextIdx];
+                return c.root + c.type;
+            });
+
+            const unlockedBadgeCount = computed(() => achievements.value.filter(a => a.unlocked).length);
+            const timerColor = computed(() => timerWidth.value < 30 ? "#ef4444" : "#c5a059");
+            
+            const srsDueCount = computed(() => {
+                const now = Date.now();
+                return stats.mistakeLog.filter(m => !m.nextReview || m.nextReview <= now).length;
+            });
+
+            const theoryTip = computed(() => DEGREE_EXPLANATIONS[currentQuestion.value.targetInterval]);
+            const playHistory = computed(() => stats.playHistory);
+            const keysList = ['C', 'G', 'D', 'A', 'E', 'B', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'];
+
+            // --- LIFECYCLE & DATA MGT ---
+            const STORAGE_KEY = 'caged_jazz_v2'; 
+            
+            const loadData = () => {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const d = JSON.parse(raw);
+                    stats.totalScore = d.totalScore || 0;
+                    stats.mistakeLog = d.mistakeLog || [];
+                    stats.playHistory = d.playHistory || [];
+                    stats.degree = d.degree || {};
+                    stats.shape = d.shape || {};
+                    stats.key = d.key || {};
+                    stats.completedSongs = d.completedSongs || [];
+                    
+                    // HEATMAP FIX (Initialize independently)
+                    if (d.heatmap && Array.isArray(d.heatmap) && Array.isArray(d.heatmap[0])) {
+                         stats.heatmap = d.heatmap; 
+                    } else {
+                         stats.heatmap = Array(6).fill(null).map(() => Array(5).fill(null).map(() => ({hits:0, miss:0})));
+                    }
+                    
+                    stats.loginStreak = d.loginStreak || 1;
+                    stats.lastLogin = d.lastLogin || Date.now();
+                    checkLoginStreak();
+
+                    settings.sound = d.settings?.sound ?? true;
+                    settings.showTheory = d.settings?.showTheory ?? true;
+                    settings.timerEnabled = d.settings?.timerEnabled ?? true;
+                    if (d.unlockedIds) {
+                        d.unlockedIds.forEach(id => {
+                            const b = achievements.value.find(a => a.id === id);
+                            if(b) b.unlocked = true;
+                        });
+                    }
+                    if (d.daily) checkDailyReset(d.daily); else generateDailyMission();
+                } else {
+                    generateDailyMission();
+                    stats.heatmap = Array(6).fill(null).map(() => Array(5).fill(null).map(() => ({hits:0, miss:0})));
+                    stats.lastLogin = Date.now();
+                    stats.loginStreak = 1;
+                }
+                audio.enabled = settings.sound;
+            };
+
+            const checkLoginStreak = () => {
+                const now = new Date();
+                const last = new Date(stats.lastLogin);
+                const isSameDay = now.toDateString() === last.toDateString();
+                if (!isSameDay) {
+                    const diffTime = Math.abs(now - last);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    if (diffDays <= 2) stats.loginStreak++;
+                    else stats.loginStreak = 1; 
+                    stats.lastLogin = Date.now();
+                    saveData();
+                }
+            };
+
+            const saveData = () => {
+                const data = {
+                    totalScore: stats.totalScore,
+                    mistakeLog: stats.mistakeLog,
+                    playHistory: stats.playHistory,
+                    degree: stats.degree, shape: stats.shape, key: stats.key,
+                    heatmap: stats.heatmap, completedSongs: stats.completedSongs,
+                    loginStreak: stats.loginStreak, lastLogin: stats.lastLogin,
+                    settings: settings,
+                    unlockedIds: achievements.value.filter(a=>a.unlocked).map(a=>a.id),
+                    daily: dailyMission.value
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            };
+
+            const generateDailyMission = () => {
+                const goals = [
+                    { type: 'score', val: 3000, desc: '本日のスコア 3,000 pts を達成せよ' },
+                    { type: 'combo', val: 20, desc: '20コンボを達成せよ' },
+                    { type: 'shape', target: 'A', val: 10, desc: 'Aフォームで10回正解せよ' }
+                ];
+                const seed = new Date().getDate() % goals.length;
+                const g = goals[seed];
+                dailyMission.value = { ...g, progress: 0, goal: g.val, date: new Date().toLocaleDateString() };
+            };
+
+            const checkDailyReset = (savedDaily) => {
+                if (savedDaily.date !== new Date().toLocaleDateString()) generateDailyMission();
+                else dailyMission.value = savedDaily;
+            };
+
+            const updateDailyProgress = (type, val, target) => {
+                if (!dailyMission.value || dailyMission.value.progress >= dailyMission.value.goal) return;
+                const dm = dailyMission.value;
+                if (dm.type === type) {
+                    if (type === 'score') dm.progress += val;
+                    if (type === 'combo' && val > dm.progress) dm.progress = val;
+                    if (type === 'shape' && target === dm.target) dm.progress++;
+                }
+                if (dm.progress > dm.goal) dm.progress = dm.goal;
+            };
+
+            const checkAchievements = () => {
+                achievements.value.forEach(badge => {
+                    if (!badge.unlocked && badge.check(stats, { maxCombo: maxCombo.value, perfect10: perfect10.value })) {
+                        badge.unlocked = true;
+                        audio.sfxCombo(10); 
+                    }
+                });
+            };
+
+            const notes = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+            const tuning = [4, 11, 7, 2, 9, 4];
+            const shapeConfig = { 'C': { rootStrIdx: 4, offset: -3, span: 4 }, 'A': { rootStrIdx: 4, offset: 0, span: 4 }, 'G': { rootStrIdx: 5, offset: -3, span: 4 }, 'E': { rootStrIdx: 5, offset: 0, span: 4 }, 'D': { rootStrIdx: 3, offset: 0, span: 4 } };
+            const diatonic = [{ r: 'Imaj7', i:[0,4,7,11] }, { r: 'iim7', i:[0,3,7,10] }, { r: 'iiim7', i:[0,3,7,10] }, { r: 'IVmaj7', i:[0,4,7,11] }, { r: 'V7', i:[0,4,7,10] }, { r: 'vim7', i:[0,3,7,10] }, { r: 'viim7b5', i:[0,3,6,10] }];
+
+            const startGame = (mode, songData = null) => {
+                gameMode.value = mode;
+                sessionScore.value = 0;
+                combo.value = 0;
+                maxCombo.value = 0;
+                perfect10.value = false;
+                
+                if (mode === 'song' && songData) {
+                    currentSong.value = songData;
+                    songIndex.value = 0;
+                    showSongSelect.value = false;
+                }
+                currentView.value = 'game';
+                nextQuestion();
+            };
+            const startSongMode = (song) => startGame('song', song);
+
+            const nextQuestion = () => {
+                isProcessing.value = false;
+                feedback.value = { msg: '' };
+                let q = {};
+                
+                if (gameMode.value === 'srs') {
+                    const now = Date.now();
+                    const due = stats.mistakeLog.filter(m => !m.nextReview || m.nextReview <= now);
+                    if (due.length === 0) { endSession(); return; }
+                    q = { ...due[Math.floor(Math.random() * due.length)] };
+                } 
+                else if (gameMode.value === 'song') {
+                    const chordData = currentSong.value.chords[songIndex.value];
+                    q.chordRootVal = notes.indexOf(chordData.root);
+                    if (chordData.type === 'maj7') q.intervals = [0,4,7,11];
+                    else if (chordData.type === 'm7') q.intervals = [0,3,7,10];
+                    else if (chordData.type === '7') q.intervals = [0,4,7,10];
+                    else if (chordData.type === 'm7b5') q.intervals = [0,3,6,10];
+                    else q.intervals = [0,4,7,11];
+                    q.chordName = chordData.root + chordData.type;
+                    q.keyInfo = `${currentSong.value.title} (${songIndex.value + 1}/${currentSong.value.chords.length})`;
+                    let shape = selectedShape.value;
+                    if (shape === 'ALL') shape = ['C','A','G','E','D'][Math.floor(Math.random()*5)];
+                    q.shape = shape;
+                    const targets = q.intervals.filter(i => i !== 0); 
+                    q.targetInterval = targets[Math.floor(Math.random() * targets.length)];
+                    q.targetDegreeName = {3:'b3',4:'3',6:'b5',7:'5',10:'b7',11:'7'}[q.targetInterval];
+                    const conf = shapeConfig[shape];
+                    let baseFret = (q.chordRootVal - tuning[conf.rootStrIdx] + 12) % 12;
+                    if (baseFret < 3) baseFret += 12;
+                    q.minF = baseFret + conf.offset;
+                    q.maxF = q.minF + conf.span;
+                } else {
+                    let keyRoot;
+                    let keyName = selectedKey.value;
+                    if (keyName === 'ALL') { keyRoot = Math.floor(Math.random()*12); keyName = notes[keyRoot]; } 
+                    else { keyRoot = notes.indexOf(keyName); }
+                    if (selectedKey.value !== 'ALL') {
+                        const offsets = [0,2,4,5,7,9,11];
+                        const idx = Math.floor(Math.random()*7);
+                        q.chordRootVal = (keyRoot + offsets[idx]) % 12;
+                        q.intervals = diatonic[idx].i;
+                        q.chordName = notes[q.chordRootVal] + (q.intervals.includes(3)?'m':'') + (q.intervals.includes(11)?'maj7':'7');
+                        if (q.intervals.includes(6)) q.chordName = notes[q.chordRootVal] + 'm7b5';
+                        q.keyInfo = keyName;
+                    } else {
+                        q.keyInfo = 'Random';
+                        q.chordRootVal = Math.floor(Math.random()*12);
+                        const type = Math.random();
+                        if(type<0.33) { q.intervals=[0,4,7,11]; q.chordName=notes[q.chordRootVal]+'maj7'; }
+                        else if(type<0.66) { q.intervals=[0,3,7,10]; q.chordName=notes[q.chordRootVal]+'m7'; }
+                        else { q.intervals=[0,4,7,10]; q.chordName=notes[q.chordRootVal]+'7'; }
+                    }
+                    let shape = selectedShape.value;
+                    if (shape === 'ALL') shape = ['C','A','G','E','D'][Math.floor(Math.random()*5)];
+                    q.shape = shape;
+                    const conf = shapeConfig[shape];
+                    let baseFret = (q.chordRootVal - tuning[conf.rootStrIdx] + 12) % 12;
+                    if (baseFret < 3) baseFret += 12;
+                    q.minF = baseFret + conf.offset;
+                    q.maxF = q.minF + conf.span;
+                    const targets = q.intervals.filter(i => i !== 0); 
+                    q.targetInterval = targets[Math.floor(Math.random() * targets.length)];
+                    q.targetDegreeName = {3:'b3',4:'3',6:'b5',7:'5',10:'b7',11:'7'}[q.targetInterval];
+                }
+
+                currentQuestion.value = q;
+                displayRange.value = { min: q.minF, max: q.maxF };
+                fretboardDots.value = [];
+                for (let s=0; s<6; s++) {
+                    for (let f=q.minF; f<=q.maxF; f++) {
+                        const note = (tuning[s] + f) % 12;
+                        const interval = (note - q.chordRootVal + 12) % 12;
+                        if (q.intervals.includes(interval)) {
+                            let isRootGuide = (difficulty.value === 'easy' && interval === 0);
+                            fretboardDots.value.push({
+                                string: s, fret: f, interval: interval,
+                                degree: {0:'R',3:'b3',4:'3',5:'4',6:'b5',7:'5',10:'b7',11:'7'}[interval],
+                                isTarget: interval === q.targetInterval, isRoot: interval === 0, r: 12, 
+                                fill: isRootGuide ? '#444' : '#333', stroke: isRootGuide ? 'var(--primary)' : 'none',
+                                textFill: '#fff', showLabel: isRootGuide
+                            });
+                        }
+                    }
+                }
+
+                clearInterval(timerInterval);
+                if (settings.timerEnabled && difficulty.value !== 'easy' && gameMode.value !== 'srs') {
+                    const timeLimit = difficulty.value === 'hard' ? 4 : 8;
+                    let remain = timeLimit;
+                    timerWidth.value = 100;
+                    timerInterval = setInterval(() => {
+                        remain -= 0.05;
+                        timerWidth.value = (remain / timeLimit) * 100;
+                        if (remain <= 0) handleShot(null, true);
+                    }, 50);
+                } else { timerWidth.value = 100; }
+            };
+
+            const handleShot = (dot, timeUp) => {
+                if (isProcessing.value) return;
+                clearInterval(timerInterval);
+                isProcessing.value = true;
+                const q = currentQuestion.value;
+                const isCorrect = !timeUp && dot && dot.isTarget;
+
+                const updateStat = (cat, key, correct) => {
+                    if (!stats[cat][key]) stats[cat][key] = { attempts:0, correct:0 };
+                    stats[cat][key].attempts++;
+                    if (correct) stats[cat][key].correct++;
+                };
+                updateStat('degree', q.targetInterval, isCorrect);
+                updateStat('shape', q.shape, isCorrect);
+                if (q.keyInfo !== 'Random') updateStat('key', q.keyInfo, isCorrect);
+
+                // HEATMAP UPDATE Logic (FIXED REFERENCE)
+                if (dot) {
+                    const seg = Math.min(4, Math.floor(dot.fret / 3));
+                    const sIdx = dot.string;
+                    if(!stats.heatmap[sIdx]) stats.heatmap[sIdx] = [];
+                    if(!stats.heatmap[sIdx][seg]) stats.heatmap[sIdx][seg] = {hits:0, miss:0};
+                    if (isCorrect) stats.heatmap[sIdx][seg].hits++; else stats.heatmap[sIdx][seg].miss++;
+                } else if (timeUp) {
+                    const target = fretboardDots.value.find(d => d.isTarget);
+                    if (target) {
+                        const seg = Math.min(4, Math.floor(target.fret / 3));
+                        const sIdx = target.string;
+                        stats.heatmap[sIdx][seg].miss++;
+                    }
+                }
+
+                if (gameMode.value === 'srs') {
+                    const idx = stats.mistakeLog.findIndex(m => m.chordName === q.chordName && m.targetInterval === q.targetInterval);
+                    if (idx > -1) {
+                        const item = stats.mistakeLog[idx];
+                        if (isCorrect) {
+                            item.level = (item.level || 0) + 1;
+                            const intervals = [4*60*60*1000, 12*60*60*1000, 24*60*60*1000, 3*24*60*60*1000, 7*24*60*60*1000];
+                            if (item.level >= intervals.length) stats.mistakeLog.splice(idx, 1);
+                            else item.nextReview = Date.now() + intervals[item.level];
+                        } else {
+                            item.level = 0;
+                            item.nextReview = Date.now() + (10 * 60 * 1000); 
+                        }
+                    }
+                } else if (!isCorrect) {
+                     const exists = stats.mistakeLog.some(m => m.chordName === q.chordName && m.targetInterval === q.targetInterval);
+                     if (!exists) {
+                         // SRS FIX: Initial Review 10 mins
+                         stats.mistakeLog.push({ ...q, level: 0, nextReview: Date.now() + (10 * 60 * 1000) });
+                     }
+                }
+
+                if (isCorrect) {
+                    combo.value++;
+                    if (combo.value > maxCombo.value) maxCombo.value = combo.value;
+                    if (combo.value >= 10 && !perfect10.value) perfect10.value = true;
+                    audio.sfxCombo(combo.value);
+                    const pts = (difficulty.value === 'hard' ? 200 : 100) * comboMultiplier.value;
+                    sessionScore.value += pts;
+                    
+                    // FEEDBACK VARIATION
+                    feedback.value = { msg: getFeedbackMessage(combo.value), sub: `+${pts}`, color: '#c5a059' };
+                    if(dot) { dot.fill = '#c5a059'; dot.showLabel = true; }
+
+                    updateDailyProgress('score', pts);
+                    updateDailyProgress('combo', combo.value);
+                    updateDailyProgress('shape', 1, q.shape);
+
+                    if (gameMode.value === 'song') {
+                        songIndex.value++;
+                        // SONG LOOP & BONUS FIX
+                        if (songIndex.value >= currentSong.value.chords.length) {
+                            songIndex.value = 0;
+                            const bonus = currentSong.value.chords.length * 50;
+                            sessionScore.value += bonus;
+                            feedback.value = { msg: '🎵 Song Complete!', sub: `Bonus +${bonus}`, color: '#84a98d' };
+                            
+                            // Track Completion
+                            if(!stats.completedSongs) stats.completedSongs = [];
+                            if(!stats.completedSongs.includes(currentSong.value.id)) stats.completedSongs.push(currentSong.value.id);
+                        }
+                    }
+                } else {
+                    audio.sfxFail();
+                    combo.value = 0;
+                    feedback.value = { msg: timeUp ? 'Time Up' : 'Miss...', sub: timeUp ? '' : `Answer: ${dot?.degree}`, color: '#95353a' };
+                    fretboardDots.value.forEach(d => {
+                        if (d.isTarget) { d.fill = '#95353a'; d.showLabel = true; d.stroke = '#fff'; }
+                        else if (dot && d === dot) { d.fill = '#555'; d.showLabel = true; }
+                    });
+                }
+                saveData();
+                setTimeout(nextQuestion, isCorrect ? 800 : 2000);
+            };
+
+            const endSession = () => {
+                clearInterval(timerInterval);
+                if (sessionScore.value > 0) {
+                    const oldRank = currentRankInfo.value.name;
+                    // TREND DATA (New)
+                    const sessionAccuracy = (() => {
+                        const attempts = Object.values(stats.degree).reduce((a,b)=>a+(b.attempts||0),0);
+                        const correct = Object.values(stats.degree).reduce((a,b)=>a+(b.correct||0),0);
+                        return attempts > 0 ? Math.round((correct/attempts)*100) : 0;
+                    })();
+
+                    stats.playHistory.unshift({ date: new Date().toLocaleString(), score: sessionScore.value, accuracy: sessionAccuracy });
+                    if (stats.playHistory.length > 20) stats.playHistory.pop();
+                    stats.totalScore += sessionScore.value;
+                    
+                    if (oldRank !== currentRankInfo.value.name) {
+                        showRankUp.value = true;
+                        audio.sfxRankUp();
+                    }
+                    checkAchievements(); 
+                }
+                saveData();
+                currentView.value = 'title';
+            };
+
+            const getHeatmapColor = (stringIdx, segment) => {
+                if (!stats.heatmap || !stats.heatmap[stringIdx] || !stats.heatmap[stringIdx][segment]) return '#222';
+                const d = stats.heatmap[stringIdx][segment];
+                const total = (d.hits || 0) + (d.miss || 0);
+                if (total === 0) return '#222'; 
+                const rate = d.hits / total;
+                const errorRate = 1 - rate;
+                if (errorRate > 0.6) return '#ef4444'; 
+                if (errorRate > 0.3) return '#eab308'; 
+                return '#22c55e'; 
+            };
+
+            const openAnalysis = () => {
+                showAnalysis.value = true;
+                nextTick(() => {
+                    const ctxScore = document.getElementById('scoreChart');
+                    if (ctxScore) {
+                        if (charts.score) charts.score.destroy();
+                        charts.score = new Chart(ctxScore, {
+                            type: 'line',
+                            data: {
+                                labels: stats.playHistory.slice().reverse().map((_,i)=>i+1),
+                                datasets: [{ label: 'Score', data: stats.playHistory.slice().reverse().map(p=>p.score), borderColor: '#c5a059', tension: 0.3 }]
+                            },
+                            options: { plugins: { legend: {display:false} }, scales: { x: {display:false}, y: {grid: {color:'#333'}} } }
+                        });
+                    }
+                });
+            };
+
+            watch(analysisTab, (newVal) => {
+                if (newVal === 'weakness') {
+                    nextTick(() => {
+                        const ctxDeg = document.getElementById('degreeChart');
+                        const labels = ['R', 'b3', '3', '5', 'b7', '7'];
+                        const data = labels.map(l => {
+                            const id = Object.keys(DEGREE_EXPLANATIONS).find(k => { const map = {0:'R',3:'b3',4:'3',7:'5',10:'b7',11:'7'}; return map[k] === l; });
+                            const s = stats.degree[id]; return s ? Math.round((s.correct/s.attempts)*100) : 0;
+                        });
+                        if(charts.deg) charts.deg.destroy();
+                        charts.deg = new Chart(ctxDeg, {
+                            type: 'radar',
+                            data: { labels: labels, datasets: [{ label: 'Accuracy %', data: data, backgroundColor: 'rgba(149, 53, 58, 0.2)', borderColor: '#95353a' }] },
+                            options: { scales: { r: { min: 0, max: 100, grid: {color:'#333'}, angleLines: {color:'#333'}, pointLabels:{color:'#aaa'} } } }
+                        });
+                        const ctxShp = document.getElementById('shapeChart');
+                        const sLabels = ['C','A','G','E','D'];
+                        const sData = sLabels.map(l => { const s = stats.shape[l]; return s ? Math.round((s.correct/s.attempts)*100) : 0; });
+                        if(charts.shp) charts.shp.destroy();
+                        charts.shp = new Chart(ctxShp, {
+                            type: 'bar',
+                            data: { labels: sLabels, datasets: [{ label: 'Mastery %', data: sData, backgroundColor: '#4a6fa5' }] },
+                            options: { scales: { y: { beginAtZero: true, max: 100, grid:{color:'#333'} } } }
+                        });
+                    });
+                }
+            });
+
+            const exportData = () => {
+                const blob = new Blob([localStorage.getItem(STORAGE_KEY)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `caged_jazz_${Date.now()}.json`; a.click();
+            };
+            const importData = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (res) => { localStorage.setItem(STORAGE_KEY, res.target.result); location.reload(); };
+                reader.readAsText(file);
+            };
+            const resetData = () => {
+                if(confirm('Reset all progress? This cannot be undone.')) { localStorage.removeItem(STORAGE_KEY); location.reload(); }
+            };
+
+            // KEYBOARD SHORTCUTS
+            window.addEventListener('keydown', (e) => {
+                if (currentView.value === 'game') {
+                    if (e.key === 'Escape') endSession();
+                    if (e.key === 'h' || e.key === 'H') {
+                        // Hint (Easy only)
+                        if (difficulty.value === 'easy') {
+                            fretboardDots.value.forEach(d => { if(d.isRoot) d.showLabel = true; });
+                        }
+                    }
+                    if ((e.key === 'n' || e.key === 'N') && gameMode.value === 'song') {
+                         songIndex.value = (songIndex.value + 1) % currentSong.value.chords.length;
+                         nextQuestion();
+                    }
+                } else if (currentView.value === 'title') {
+                    if (e.key === 'K' && e.shiftKey) { selectedKey.value = selectedKey.value==='ALL'?'C':'ALL'; }
+                }
+            });
+
+            onMounted(loadData);
+
+            return {
+                currentView, difficulty, selectedKey, selectedShape, keysList,
+                startGame, startSongMode, endSession, handleShot,
+                sessionScore, combo, comboMultiplier, currentRankInfo,
+                timerWidth, timerColor, feedback, fretboardDots, displayRange, currentQuestion, theoryTip,
+                stats, achievements, unlockedBadgeCount, showAchievements,
+                showAnalysis, openAnalysis, analysisTab, playHistory,
+                showSettings, settings, exportData, importData, resetData,
+                dailyMission, srsDueCount, showHelp, showRankUp,
+                showSongSelect, filteredSongs, searchQuery, getHeatmapColor,
+                currentSong, songIndex, gameMode, nextChordName, statsOverview
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
