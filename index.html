@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAGED MAESTRO: Real Book Edition v2.1</title>
+    <title>CAGED MAESTRO: Real Book Edition v2.2</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
@@ -116,7 +116,7 @@
         }
         .streak-count { font-weight: bold; color: var(--primary); }
 
-        /* SUMMARY CARDS (NEW) */
+        /* SUMMARY CARDS */
         .summary-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
         }
@@ -239,9 +239,15 @@
         .modal-body { padding: 1.5rem; overflow-y: auto; text-align: left; }
         .modal-title { margin: 0; color: var(--primary); font-family: var(--font-serif); font-size: 1.4rem; }
         
-        .help-section { margin-bottom: 1.5rem; }
-        .help-section h3 { color: #fff; border-bottom: 1px solid var(--primary-dim); padding-bottom: 5px; font-size: 1rem; margin-bottom: 10px; }
-        .help-section p, .help-section li { color: #aaa; font-size: 0.9rem; line-height: 1.6; }
+        /* MANUAL STYLE ENHANCEMENTS */
+        .help-section { margin-bottom: 2rem; }
+        .help-section h3 { color: #fff; border-bottom: 1px solid var(--primary-dim); padding-bottom: 8px; font-size: 1.1rem; margin-bottom: 15px; font-family: var(--font-serif); letter-spacing: 1px; }
+        .help-section p, .help-section li { color: #aaa; font-size: 0.9rem; line-height: 1.6; margin-bottom: 8px; }
+        
+        .help-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; color: #ccc; margin-top: 10px; }
+        .help-table th, .help-table td { border: 1px solid #444; padding: 8px 12px; text-align: left; }
+        .help-table th { background: rgba(197, 160, 89, 0.1); color: var(--primary); font-weight: bold; width: 30%; }
+        .key-badge { background: #333; padding: 2px 6px; border-radius: 4px; border: 1px solid #555; font-family: monospace; color: #fff; font-weight: bold; display: inline-block; min-width: 20px; text-align: center; }
 
         .tab-nav { display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 1rem; }
         .tab-btn { flex: 1; background: transparent; border: none; color: #666; padding: 12px; cursor: pointer; font-weight: 600; border-bottom: 2px solid transparent; font-family: var(--font-main); }
@@ -503,26 +509,46 @@
         <div v-if="showHelp" class="modal-overlay" @click.self="showHelp = false">
             <div class="modal-box">
                 <div class="modal-header">
-                    <h2 class="modal-title">🎼 Session Guide</h2>
+                    <h2 class="modal-title">📓 Training Manual</h2>
                     <button class="btn-icon" @click="showHelp = false">✕</button>
                 </div>
                 <div class="modal-body">
                     <div class="help-section">
-                        <h3>Game Modes</h3>
-                        <ul style="color:#aaa; padding-left:20px; font-size:0.9rem;">
-                            <li><b>Normal Session</b>: ランダムに出題されるコードに対応します。</li>
-                            <li><b>Gig Mode</b>: 「枯葉」などの実際の曲の進行に合わせて練習します。</li>
-                            <li><b>SRS (復習)</b>: 間違えた問題を、忘れた頃に再出題する科学的なトレーニングです。</li>
-                        </ul>
+                        <h3>1. Concept</h3>
+                        <p>本アプリは「CAGEDシステム」を用い、指板上のコードトーン（構成音）を瞬時に視覚化するトレーニングツールです。ジャズのアドリブにおいて、コードの色彩を決める<b>3rd</b>や<b>7th</b>を即座に特定する能力を養います。</p>
                     </div>
+
                     <div class="help-section">
-                        <h3>Shortcuts</h3>
-                        <ul style="color:#aaa; padding-left:20px; font-size:0.9rem;">
-                            <li><b>ESC</b>: End Session</li>
-                            <li><b>Shift+K</b>: Toggle Key</li>
-                            <li><b>H</b>: Hint (Easy Mode)</li>
-                            <li><b>N</b>: Skip Chord (Song Mode)</li>
-                        </ul>
+                        <h3>2. Game Modes</h3>
+                        <table class="help-table">
+                            <tr><th>Normal</th><td>ランダムなキー・コード進行で基礎力を鍛えます。</td></tr>
+                            <tr><th>Gig Mode</th><td>「枯葉」など実際のスタンダード曲の進行で実践練習を行います。完走でボーナススコア獲得。</td></tr>
+                            <tr><th>SRS (復習)</th><td>科学的な「間隔反復」システム。間違えた問題は以下のサイクルで再出題されます。<br>
+                            <span style="font-size:0.75rem; color:#888;">(10分後 → 4時間後 → 12時間後 → 1日後 → 3日後 → 完了)</span></td></tr>
+                        </table>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>3. Controls & Shortcuts</h3>
+                        <table class="help-table">
+                            <tr><th><span class="key-badge">ESC</span></th><td>セッションを終了して戻る</td></tr>
+                            <tr><th><span class="key-badge">Shift</span>+<span class="key-badge">K</span></th><td>出題キーの固定/解除 (Toggle)</td></tr>
+                            <tr><th><span class="key-badge">H</span></th><td>ヒント表示 (ルート音を強調 / Easyのみ)</td></tr>
+                            <tr><th><span class="key-badge">N</span></th><td>次のコードへスキップ (Song Modeのみ)</td></tr>
+                        </table>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>4. Theory Reference</h3>
+                        <p>ターゲットとなる度数（Interval）の意味一覧です。</p>
+                        <table class="help-table">
+                            <tr><th>M3 (3)</th><td>メジャーコードの明るさを決定づける音</td></tr>
+                            <tr><th>m3 (b3)</th><td>マイナーコードの暗さを決定づける音</td></tr>
+                            <tr><th>M7 (7)</th><td>都会的で洗練された響き (Major 7th)</td></tr>
+                            <tr><th>m7 (b7)</th><td>ブルージーで不安定な響き (Dominant / Minor)</td></tr>
+                            <tr><th>P5 (5)</th><td>コードの骨格・安定感</td></tr>
+                            <tr><th>b5 (#11)</th><td>緊張感のあるブルーノート、またはリディアン系</td></tr>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -1224,7 +1250,7 @@
                 clearInterval(timerInterval);
                 if (sessionScore.value > 0) {
                     const oldRank = currentRankInfo.value.name;
-                    // TREND DATA (New)
+                    // TREND DATA
                     const sessionAccuracy = (() => {
                         const attempts = Object.values(stats.degree).reduce((a,b)=>a+(b.attempts||0),0);
                         const correct = Object.values(stats.degree).reduce((a,b)=>a+(b.correct||0),0);
