@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAGED MAESTRO: Real Book Edition v2.2</title>
+    <title>CAGED MAESTRO: Real Book Edition v2.3</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -687,30 +689,90 @@
 <script>
     const { createApp, ref, computed, onMounted, watch, nextTick, reactive } = Vue;
 
-    // --- AUDIO SYSTEM ---
+    // --- AUDIO SYSTEM (POWERED BY TONE.JS) ---
     class AudioEngine {
-        constructor() { this.ctx = null; this.enabled = true; }
-        init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); }
-        play(freqs, type='sine', dur=0.3, vol=0.1) {
-            if (!this.enabled) return;
-            this.init();
-            const t = this.ctx.currentTime;
-            freqs.forEach((f, i) => {
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = type; osc.frequency.value = f;
-                gain.gain.setValueAtTime(0, t + i*0.05);
-                gain.gain.linearRampToValueAtTime(vol, t + i*0.05 + 0.05);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + i*0.05 + dur);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(t + i*0.05); osc.stop(t + i*0.05 + dur);
-            });
+        constructor() {
+            this.synth = null;
+            this.reverb = null;
+            this.enabled = true;
+            this.isInitialized = false;
         }
-        sfxSuccess() { this.play([440, 554, 659], 'sine', 0.5, 0.1); }
-        sfxCombo(count) { let base = 261 + (Math.min(count, 12) * 20); this.play([base, base*1.2], 'triangle', 0.3, 0.1); }
-        sfxFail() { this.play([150, 140], 'sawtooth', 0.4, 0.1); }
-        sfxRankUp() { this.play([261, 329, 392, 523], 'sawtooth', 0.8, 0.1); setTimeout(() => this.play([261, 329, 392, 523, 659, 783], 'square', 1.5, 0.15), 200); } 
+
+        async init() {
+            if (this.isInitialized) return;
+            
+            await Tone.start(); // ユーザー操作をトリガーにAudioContextを開始
+
+            // ジャズギター風の甘いトーンを作る設定
+            this.synth = new Tone.PolySynth(Tone.Synth, {
+                maxPolyphony: 6, 
+                options: {
+                    oscillator: { type: "triangle" }, // 丸い音
+                    envelope: {
+                        attack: 0.02, decay: 0.3, sustain: 0.3, release: 1.2
+                    }
+                }
+            });
+
+            // "Jazz Club" の雰囲気を出すリバーブ
+            this.reverb = new Tone.Reverb({
+                decay: 2.5, preDelay: 0.1, wet: 0.3
+            }).toDestination();
+
+            // フィルター（トーンノブを絞った感じ）
+            this.filter = new Tone.Filter(800, "lowpass").connect(this.reverb);
+            this.synth.connect(this.filter);
+            
+            // 音量調整
+            this.synth.volume.value = -8; 
+            
+            this.isInitialized = true;
+            console.log("Tone.js Audio Engine Initialized");
+        }
+
+        play(freqs, type = 'sine', dur = 0.5, vol = 0.1) {
+            if (!this.enabled) return;
+            if (!this.isInitialized) {
+                this.init().then(() => this.triggerSound(freqs, dur));
+            } else {
+                this.triggerSound(freqs, dur);
+            }
+        }
+
+        triggerSound(freqs, dur) {
+            if (!this.synth) return;
+            this.synth.triggerAttackRelease(freqs, dur);
+        }
+
+        sfxSuccess() { 
+            if(!this.enabled) return;
+            this.play([523.25, 659.25, 783.99, 1046.50], null, 0.4); // C Major
+        }
+
+        sfxCombo(count) { 
+            if(!this.enabled) return;
+            let base = 261.63 * (1 + (Math.min(count, 10) * 0.1)); 
+            this.play([base, base * 1.5], null, 0.2);
+        }
+
+        sfxFail() { 
+            if(!this.enabled) return;
+            if (this.isInitialized) {
+                const noise = new Tone.MembraneSynth().toDestination();
+                noise.triggerAttackRelease("C1", "8n");
+                noise.volume.value = -5;
+            }
+        }
+
+        sfxRankUp() { 
+            if(!this.enabled) return;
+            const now = Tone.now();
+            this.synth.triggerAttackRelease(["C4", "E4", "G4"], 0.2, now);
+            this.synth.triggerAttackRelease(["C4", "E4", "G4"], 0.2, now + 0.2);
+            this.synth.triggerAttackRelease(["C4", "F4", "A4", "C5"], 2.0, now + 0.4);
+        }
     }
+
     const audio = new AudioEngine();
 
     const DEGREE_EXPLANATIONS = {
@@ -719,7 +781,6 @@
         7: 'Perfect 5th: コードに力強さと安定を与える音。', 10: 'Minor 7th: ドミナントやマイナーに必須のブルージーな音。', 11: 'Major 7th: 都会的で洗練されたジャズの響き。'
     };
 
-    // UPDATED ACHIEVEMENTS
     const ACHIEVEMENT_LIST = [
         { id: 'first_win', name: 'Debut', icon: '🎫', check: (s) => s.totalScore > 0 },
         { id: 'score_10k', name: 'Local Hero', icon: '🎩', check: (s) => s.totalScore >= 10000 },
@@ -730,7 +791,6 @@
         { id: 'streak_7', name: 'Weekly Warrior', icon: '🔥', check: (s) => s.loginStreak >= 7 },
         { id: 'perfect_session', name: 'Flawless', icon: '💎', check: (s, session) => session.perfect10 === true },
         { id: 'heatmap_pro', name: 'Fretboard Master', icon: '🗺️', check: (s) => {
-             // Simple check: >80% accuracy in total map
              if (!s.heatmap) return false;
              let hits=0, total=0;
              s.heatmap.forEach(r => r.forEach(c => { hits+=c.hits; total+=(c.hits+c.miss); }));
@@ -795,7 +855,6 @@
         chords: s.c.split(' ').map(str => parseChordString(str))
     })).sort((a,b) => a.title.localeCompare(b.title));
 
-    // FEEDBACK VARIATIONS
     const getFeedbackMessage = (combo) => {
         const messages = {
             1: ['Nice!', 'Good!', 'Yeah!', 'Sweet!'],
@@ -813,7 +872,6 @@
 
     createApp({
         setup() {
-            // STATE
             const currentView = ref('title');
             const showSettings = ref(false);
             const showAnalysis = ref(false);
@@ -824,20 +882,18 @@
             const analysisTab = ref('stats');
             const searchQuery = ref('');
             
-            // GAME CONFIG
             const difficulty = ref('normal');
             const selectedKey = ref('ALL');
             const selectedShape = ref('ALL');
             const gameMode = ref('normal'); 
             
-            // STATS & PROGRESS
             const stats = reactive({
                 totalScore: 0,
                 mistakeLog: [],
                 playHistory: [],
                 degree: {}, shape: {}, key: {},
-                heatmap: [], // Initialized in loadData
-                completedSongs: [], // New
+                heatmap: [], 
+                completedSongs: [],
                 loginStreak: 0, lastLogin: null
             });
             const achievements = ref(ACHIEVEMENT_LIST.map(a => ({...a, unlocked: false})));
@@ -845,11 +901,10 @@
             
             const dailyMission = ref(null);
             
-            // IN-GAME
             const sessionScore = ref(0);
             const combo = ref(0);
             const maxCombo = ref(0);
-            const perfect10 = ref(false); // Track for achievement
+            const perfect10 = ref(false);
             const currentQuestion = ref({});
             const fretboardDots = ref([]);
             const displayRange = ref({min:0, max:12});
@@ -858,11 +913,9 @@
             const isProcessing = ref(false);
             let timerInterval = null;
             
-            // SONG MODE STATE
             const currentSong = ref(null);
             const songIndex = ref(0);
 
-            // COMPUTED
             const comboMultiplier = computed(() => Math.min(combo.value, 50) || 1);
             
             const currentRankInfo = computed(() => {
@@ -883,7 +936,6 @@
                 return { name: current.name, progress, nextReq: current.limit };
             });
 
-            // STATS OVERVIEW COMPUTED
             const statsOverview = computed(() => {
                 const totalAttempts = Object.values(stats.degree).reduce((a,b) => a + (b.attempts||0), 0);
                 const totalCorrect = Object.values(stats.degree).reduce((a,b) => a + (b.correct||0), 0);
@@ -920,6 +972,7 @@
 
             // --- LIFECYCLE & DATA MGT ---
             const STORAGE_KEY = 'caged_jazz_v2'; 
+            let charts = {};
             
             const loadData = () => {
                 const raw = localStorage.getItem(STORAGE_KEY);
@@ -933,7 +986,6 @@
                     stats.key = d.key || {};
                     stats.completedSongs = d.completedSongs || [];
                     
-                    // HEATMAP FIX (Initialize independently)
                     if (d.heatmap && Array.isArray(d.heatmap) && Array.isArray(d.heatmap[0])) {
                          stats.heatmap = d.heatmap; 
                     } else {
@@ -1034,6 +1086,7 @@
             const diatonic = [{ r: 'Imaj7', i:[0,4,7,11] }, { r: 'iim7', i:[0,3,7,10] }, { r: 'iiim7', i:[0,3,7,10] }, { r: 'IVmaj7', i:[0,4,7,11] }, { r: 'V7', i:[0,4,7,10] }, { r: 'vim7', i:[0,3,7,10] }, { r: 'viim7b5', i:[0,3,6,10] }];
 
             const startGame = (mode, songData = null) => {
+                audio.init();
                 gameMode.value = mode;
                 sessionScore.value = 0;
                 combo.value = 0;
@@ -1165,7 +1218,6 @@
                 updateStat('shape', q.shape, isCorrect);
                 if (q.keyInfo !== 'Random') updateStat('key', q.keyInfo, isCorrect);
 
-                // HEATMAP UPDATE Logic (FIXED REFERENCE)
                 if (dot) {
                     const seg = Math.min(4, Math.floor(dot.fret / 3));
                     const sIdx = dot.string;
@@ -1198,7 +1250,6 @@
                 } else if (!isCorrect) {
                      const exists = stats.mistakeLog.some(m => m.chordName === q.chordName && m.targetInterval === q.targetInterval);
                      if (!exists) {
-                         // SRS FIX: Initial Review 10 mins
                          stats.mistakeLog.push({ ...q, level: 0, nextReview: Date.now() + (10 * 60 * 1000) });
                      }
                 }
@@ -1211,7 +1262,6 @@
                     const pts = (difficulty.value === 'hard' ? 200 : 100) * comboMultiplier.value;
                     sessionScore.value += pts;
                     
-                    // FEEDBACK VARIATION
                     feedback.value = { msg: getFeedbackMessage(combo.value), sub: `+${pts}`, color: '#c5a059' };
                     if(dot) { dot.fill = '#c5a059'; dot.showLabel = true; }
 
@@ -1221,14 +1271,12 @@
 
                     if (gameMode.value === 'song') {
                         songIndex.value++;
-                        // SONG LOOP & BONUS FIX
                         if (songIndex.value >= currentSong.value.chords.length) {
                             songIndex.value = 0;
                             const bonus = currentSong.value.chords.length * 50;
                             sessionScore.value += bonus;
                             feedback.value = { msg: '🎵 Song Complete!', sub: `Bonus +${bonus}`, color: '#84a98d' };
                             
-                            // Track Completion
                             if(!stats.completedSongs) stats.completedSongs = [];
                             if(!stats.completedSongs.includes(currentSong.value.id)) stats.completedSongs.push(currentSong.value.id);
                         }
@@ -1250,7 +1298,6 @@
                 clearInterval(timerInterval);
                 if (sessionScore.value > 0) {
                     const oldRank = currentRankInfo.value.name;
-                    // TREND DATA
                     const sessionAccuracy = (() => {
                         const attempts = Object.values(stats.degree).reduce((a,b)=>a+(b.attempts||0),0);
                         const correct = Object.values(stats.degree).reduce((a,b)=>a+(b.correct||0),0);
@@ -1344,12 +1391,10 @@
                 if(confirm('Reset all progress? This cannot be undone.')) { localStorage.removeItem(STORAGE_KEY); location.reload(); }
             };
 
-            // KEYBOARD SHORTCUTS
             window.addEventListener('keydown', (e) => {
                 if (currentView.value === 'game') {
                     if (e.key === 'Escape') endSession();
                     if (e.key === 'h' || e.key === 'H') {
-                        // Hint (Easy only)
                         if (difficulty.value === 'easy') {
                             fretboardDots.value.forEach(d => { if(d.isRoot) d.showLabel = true; });
                         }
