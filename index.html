@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAGED MAESTRO: Real Book Edition v2.3</title>
+    <title>CAGED MAESTRO: Real Book Edition v2.9</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -41,7 +41,6 @@
             padding: 1rem;
             display: flex;
             justify-content: center;
-            /* Smoky spotlight effect */
             background-image: radial-gradient(circle at 50% 0%, #2a2a30 0%, #0d0d0f 70%);
         }
 
@@ -118,29 +117,6 @@
         }
         .streak-count { font-weight: bold; color: var(--primary); }
 
-        /* SUMMARY CARDS */
-        .summary-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
-        }
-        .summary-item {
-            background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; text-align: center;
-        }
-        .summary-label { font-size: 0.7rem; color: #888; display: block; }
-        .summary-value { font-size: 1.1rem; color: #fff; font-weight: bold; font-family: var(--font-serif); }
-
-        /* DAILY MISSION */
-        .daily-mission-box {
-            background: linear-gradient(90deg, rgba(74, 111, 165, 0.1) 0%, transparent 100%);
-            border-left: 3px solid var(--info);
-            margin: 0 20px 20px 20px; padding: 15px; text-align: left;
-            display: flex; justify-content: space-between; align-items: center;
-            border-radius: 4px;
-        }
-        .mission-title { font-size: 0.75rem; color: var(--info); font-weight: bold; margin-bottom: 4px; letter-spacing: 1px;}
-        .mission-desc { font-size: 0.9rem; font-family: var(--font-main); font-weight: bold; }
-        .mission-progress { font-family: var(--font-main); font-size: 0.8rem; color: #666; font-weight: bold; }
-        .mission-complete { color: var(--success); }
-
         /* BUTTONS */
         .btn { 
             border: none; border-radius: 50px; cursor: pointer; font-weight: 600; margin: 8px; 
@@ -178,18 +154,18 @@
         .select-item:hover { background: rgba(255,255,255,0.05); color: #bbb; }
         .select-item.active { background: rgba(197, 160, 89, 0.1); border-color: var(--primary); color: var(--primary); font-weight: bold; }
 
-        /* SEARCH BAR */
-        .search-box {
-            width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
-            color: #fff; font-family: var(--font-main); font-size: 1rem; outline: none;
-            margin-bottom: 15px; transition: border-color 0.3s;
+        /* DAILY MISSION */
+        .daily-mission-box {
+            background: linear-gradient(90deg, rgba(74, 111, 165, 0.1) 0%, transparent 100%);
+            border-left: 3px solid var(--info);
+            margin: 0 20px 20px 20px; padding: 15px; text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
+            border-radius: 4px;
         }
-        .search-box:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
-        .song-list-container { max-height: 60vh; overflow-y: auto; padding-right: 5px; }
-        .song-list-container::-webkit-scrollbar { width: 6px; }
-        .song-list-container::-webkit-scrollbar-track { background: #111; }
-        .song-list-container::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .mission-title { font-size: 0.75rem; color: var(--info); font-weight: bold; margin-bottom: 4px; letter-spacing: 1px;}
+        .mission-desc { font-size: 0.9rem; font-family: var(--font-main); font-weight: bold; }
+        .mission-progress { font-family: var(--font-main); font-size: 0.8rem; color: #666; font-weight: bold; }
+        .mission-complete { color: var(--success); }
 
         /* GAME UI */
         .game-header { 
@@ -206,7 +182,10 @@
             background: #161618; padding: 1.5rem; margin: 1rem 20px; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05);
             position: relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
         }
-        
+        .chord-main { font-family: var(--font-serif); font-size: 3.5rem; font-weight: 400; color: #fff; line-height: 1; margin: 10px 0; }
+        .target-sub { font-size: 1.5rem; color: var(--accent); font-weight: 700; margin-top: 10px; font-family: var(--font-serif); font-style: italic; }
+        .target-sub span { color: var(--text-muted); font-size: 0.9rem; font-family: var(--font-main); font-style: normal; font-weight: normal; margin-right: 10px;}
+        .theory-tip { margin-top: 15px; padding: 10px; background: rgba(74, 111, 165, 0.1); border-radius: 6px; color: #a0aec0; font-size: 0.8rem; text-align: left; display: flex; align-items: center; gap: 10px; }
         .song-progress-wrap { margin-bottom: 15px; }
         .song-info-bar { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         .song-progress-track { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; }
@@ -214,24 +193,19 @@
         .next-chord { margin-top: 15px; font-size: 0.9rem; color: #666; font-style: italic; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
         .next-chord span { color: #fff; font-weight: bold; font-family: var(--font-serif); margin-left: 5px; }
 
-        .chord-main { font-family: var(--font-serif); font-size: 3.5rem; font-weight: 400; color: #fff; line-height: 1; margin: 10px 0; }
-        .target-sub { font-size: 1.5rem; color: var(--accent); font-weight: 700; margin-top: 10px; font-family: var(--font-serif); font-style: italic; }
-        .target-sub span { color: var(--text-muted); font-size: 0.9rem; font-family: var(--font-main); font-style: normal; font-weight: normal; margin-right: 10px;}
-
-        .theory-tip {
-            margin-top: 15px; padding: 10px; background: rgba(74, 111, 165, 0.1); border-radius: 6px;
-            color: #a0aec0; font-size: 0.8rem; text-align: left; display: flex; align-items: center; gap: 10px;
-        }
-
+        /* REALISTIC FRETBOARD STYLES */
         .fretboard-wrap { 
-            width: 100%; overflow: hidden; background: #0f0f10; 
-            border-top: 1px solid #333; border-bottom: 1px solid #333;
-            padding: 20px 0; margin-bottom: 1rem; cursor: pointer; display: flex; justify-content: center;
+            width: 100%; overflow: hidden; background: #000; 
+            border-top: 2px solid #111; border-bottom: 2px solid #111;
+            padding: 0; margin-bottom: 1rem; cursor: pointer; display: flex; justify-content: center;
+            position: relative; /* Ensure context for absolute children if needed */
+            z-index: 1;
         }
         .responsive-svg { width: 100%; height: auto; max-width: 760px; display: block; }
         .interactive-dot { transition: all 0.2s; cursor: pointer; }
-        .interactive-dot:hover { stroke: white; stroke-width: 2px; filter: drop-shadow(0 0 8px var(--primary)); }
-
+        .interactive-dot:hover { stroke: white; stroke-width: 2px; filter: drop-shadow(0 0 5px var(--primary)); }
+        
+        /* OVERLAYS */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px); padding: 20px; }
         .modal-box { 
             background: #1c1c1f; width: 100%; max-width: 600px; max-height: 85vh; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.1); 
@@ -241,16 +215,65 @@
         .modal-body { padding: 1.5rem; overflow-y: auto; text-align: left; }
         .modal-title { margin: 0; color: var(--primary); font-family: var(--font-serif); font-size: 1.4rem; }
         
-        /* MANUAL STYLE ENHANCEMENTS */
+        /* IN-GAME RANK UP FLASH EFFECT (FIXED Z-INDEX ISSUE) */
+        .ingame-rank-overlay {
+            position: fixed; /* Changed to fixed to cover entire screen */
+            top: 0; left: 0; width: 100%; height: 100vh;
+            pointer-events: none; /* Clicks pass through */
+            z-index: 300; /* Ultra-high z-index to be on top of everything */
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center;
+        }
+        .flash-text {
+            font-family: var(--font-serif); font-weight: 900; color: #fff;
+            text-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary);
+            animation: flashAnim 2.5s ease-out forwards;
+        }
+        .flash-title { font-size: 4rem; color: var(--primary); margin-bottom: 10px; line-height: 1; }
+        .flash-sub { font-size: 2rem; color: #fff; letter-spacing: 5px; text-transform: uppercase; }
+        
+        @keyframes flashAnim {
+            0% { transform: scale(0.5); opacity: 0; filter: blur(20px); }
+            10% { transform: scale(1.2); opacity: 1; filter: blur(0); }
+            20% { transform: scale(1.0); }
+            80% { opacity: 1; transform: scale(1.0); }
+            100% { opacity: 0; transform: scale(1.5); filter: blur(10px); }
+        }
+
         .help-section { margin-bottom: 2rem; }
         .help-section h3 { color: #fff; border-bottom: 1px solid var(--primary-dim); padding-bottom: 8px; font-size: 1.1rem; margin-bottom: 15px; font-family: var(--font-serif); letter-spacing: 1px; }
         .help-section p, .help-section li { color: #aaa; font-size: 0.9rem; line-height: 1.6; margin-bottom: 8px; }
-        
         .help-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; color: #ccc; margin-top: 10px; }
         .help-table th, .help-table td { border: 1px solid #444; padding: 8px 12px; text-align: left; }
         .help-table th { background: rgba(197, 160, 89, 0.1); color: var(--primary); font-weight: bold; width: 30%; }
         .key-badge { background: #333; padding: 2px 6px; border-radius: 4px; border: 1px solid #555; font-family: monospace; color: #fff; font-weight: bold; display: inline-block; min-width: 20px; text-align: center; }
 
+        .search-box { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: var(--font-main); font-size: 1rem; outline: none; margin-bottom: 15px; transition: border-color 0.3s; }
+        .search-box:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
+        .song-list-container { max-height: 60vh; overflow-y: auto; padding-right: 5px; }
+        
+        .feedback-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.6); z-index: 50; backdrop-filter: blur(2px); border-radius: 1rem; pointer-events: none; }
+        .fb-text { font-family: var(--font-serif); font-size: 4rem; font-weight: 700; color: #fff; text-shadow: 0 5px 15px rgba(0,0,0,0.5); animation: popIn 0.3s ease-out; }
+        .fb-sub { background: var(--bg); color: var(--primary); padding: 5px 20px; border-radius: 20px; margin-top: 10px; border: 1px solid var(--primary); }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .rank-up-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; cursor: pointer; }
+        .god-rays { position: absolute; top: 50%; left: 50%; width: 200vmax; height: 200vmax; background: conic-gradient(from 0deg, transparent 0deg, rgba(197, 160, 89, 0.2) 20deg, transparent 40deg, rgba(197, 160, 89, 0.2) 60deg, transparent 80deg); transform: translate(-50%, -50%); animation: rotateRays 20s linear infinite; pointer-events: none; }
+        .rank-up-content { z-index: 201; text-align: center; animation: zoomInBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .rank-up-label { font-family: var(--font-serif); font-size: 3rem; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5); letter-spacing: 5px; margin-bottom: 20px; }
+        .rank-up-name { font-family: var(--font-serif); font-size: 5rem; font-weight: 900; background: linear-gradient(135deg, #fff 0%, var(--primary) 50%, #fff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 50px var(--primary-dim); margin-bottom: 10px; }
+        .rank-up-sub { color: #888; letter-spacing: 2px; text-transform: uppercase; font-size: 0.9rem; margin-top: 30px; animation: pulse 2s infinite; }
+        @keyframes rotateRays { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes zoomInBounce { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        .help-mark { display: inline-block; width: 14px; height: 14px; line-height: 14px; background: #444; color: #fff; border-radius: 50%; font-size: 10px; text-align: center; cursor: help; margin-left: 5px; }
+        .help-mark:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #222; padding: 5px 10px; border-radius: 4px; border: 1px solid #444; width: max-content; max-width: 200px; font-size: 0.7rem; color: #eee; z-index: 10; text-transform: none; font-weight: normal; margin-bottom: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+        .app-footer { padding: 1.5rem; text-align: center; font-size: 0.75rem; color: #444; border-top: 1px solid rgba(255,255,255,0.02); margin-top: auto; }
+        .text-sm { font-size: 0.8rem; color: #888; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        
         .tab-nav { display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 1rem; }
         .tab-btn { flex: 1; background: transparent; border: none; color: #666; padding: 12px; cursor: pointer; font-weight: 600; border-bottom: 2px solid transparent; font-family: var(--font-main); }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: rgba(197, 160, 89, 0.05); }
@@ -258,55 +281,10 @@
         .badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; }
         .badge-item { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; text-align: center; opacity: 0.2; filter: grayscale(1); transition: all 0.5s; }
         .badge-item.unlocked { opacity: 1; filter: grayscale(0); background: linear-gradient(135deg, rgba(197, 160, 89, 0.1) 0%, transparent 100%); border: 1px solid var(--primary-dim); }
-        
-        .feedback-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.6); z-index: 50; backdrop-filter: blur(2px); border-radius: 1rem; }
-        .fb-text { font-family: var(--font-serif); font-size: 4rem; font-weight: 700; color: #fff; text-shadow: 0 5px 15px rgba(0,0,0,0.5); animation: popIn 0.3s ease-out; }
-        .fb-sub { background: var(--bg); color: var(--primary); padding: 5px 20px; border-radius: 20px; margin-top: 10px; border: 1px solid var(--primary); }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-        .rank-up-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92); z-index: 200;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; cursor: pointer;
-        }
-        .god-rays {
-            position: absolute; top: 50%; left: 50%; width: 200vmax; height: 200vmax;
-            background: conic-gradient(from 0deg, transparent 0deg, rgba(197, 160, 89, 0.2) 20deg, transparent 40deg, rgba(197, 160, 89, 0.2) 60deg, transparent 80deg);
-            transform: translate(-50%, -50%); animation: rotateRays 20s linear infinite; pointer-events: none;
-        }
-        .rank-up-content { z-index: 201; text-align: center; animation: zoomInBounce 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .rank-up-label { font-family: var(--font-serif); font-size: 3rem; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5); letter-spacing: 5px; margin-bottom: 20px; }
-        .rank-up-name { 
-            font-family: var(--font-serif); font-size: 5rem; font-weight: 900; 
-            background: linear-gradient(135deg, #fff 0%, var(--primary) 50%, #fff 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 50px var(--primary-dim); margin-bottom: 10px;
-        }
-        .rank-up-sub { color: #888; letter-spacing: 2px; text-transform: uppercase; font-size: 0.9rem; margin-top: 30px; animation: pulse 2s infinite; }
-        @keyframes rotateRays { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
-        @keyframes zoomInBounce { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-        .help-mark { 
-            display: inline-block; width: 14px; height: 14px; line-height: 14px; 
-            background: #444; color: #fff; border-radius: 50%; 
-            font-size: 10px; text-align: center; cursor: help; margin-left: 5px; 
-        }
-        .help-mark:hover::after {
-            content: attr(data-tooltip);
-            position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-            background: #222; padding: 5px 10px; border-radius: 4px; border: 1px solid #444;
-            width: max-content; max-width: 200px; font-size: 0.7rem; color: #eee; z-index: 10;
-            text-transform: none; font-weight: normal; margin-bottom: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-
-        .app-footer {
-            padding: 1.5rem; text-align: center; font-size: 0.75rem; color: #444;
-            border-top: 1px solid rgba(255,255,255,0.02); margin-top: auto;
-        }
-        .text-sm { font-size: 0.8rem; color: #888; }
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .summary-item { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; text-align: center; }
+        .summary-label { font-size: 0.7rem; color: #888; display: block; }
+        .summary-value { font-size: 1.1rem; color: #fff; font-weight: bold; font-family: var(--font-serif); }
     </style>
 </head>
 <body>
@@ -443,6 +421,13 @@
             </div>
 
             <div class="mission-display">
+                <div v-if="ingameRankUp" class="ingame-rank-overlay">
+                    <div class="flash-text">
+                        <div class="flash-title">RANK UP!</div>
+                        <div class="flash-sub">{{ currentRankInfo.name }}</div>
+                    </div>
+                </div>
+
                 <div v-if="gameMode === 'song'" class="song-progress-wrap">
                     <div class="song-info-bar">
                         <span>{{ currentSong.title }}</span>
@@ -477,22 +462,65 @@
             </div>
 
             <div class="fretboard-wrap">
-                <svg viewBox="0 0 760 200" preserveAspectRatio="xMidYMid meet" class="responsive-svg">
-                    <rect x="0" y="0" width="760" height="200" fill="#1a1a1d" />
-                    <line v-for="i in 16" :key="'f'+i" :x1="i * 45" y1="10" :x2="i * 45" y2="190" stroke="#333" stroke-width="2" />
-                    <rect v-if="displayRange.min === 0" x="0" y="10" width="6" height="180" fill="#222" />
-                    <circle v-for="p in [3,5,7,9,12,15]" :cx="p * 45 - 22.5" cy="100" r="5" fill="#2a2a2a" />
-                    <circle v-if="displayRange.max >= 12" cx="517.5" cy="55" r="5" fill="#2a2a2a" />
-                    <circle v-if="displayRange.max >= 12" cx="517.5" cy="145" r="5" fill="#2a2a2a" />
-                    <line v-for="(s, index) in 6" :key="'str'+index" x1="0" :y1="30 + index * 28" x2="760" :y2="30 + index * 28" stroke="#4a4a4e" :stroke-width="index * 0.5 + 1" />
-                    <text v-for="f in 15" :key="'num'+f" :x="(f + displayRange.min) * 45 - 22.5" y="205" text-anchor="middle" fill="#555" font-size="10" font-family="Montserrat">{{ f + displayRange.min }}</text>
+                <svg viewBox="0 0 760 230" preserveAspectRatio="xMidYMid meet" class="responsive-svg">
+                    <defs>
+                        <linearGradient id="fretGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#555;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#ddd;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#555;stop-opacity:1" />
+                        </linearGradient>
+                        <radialGradient id="inlayGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                            <stop offset="0%" style="stop-color:#fff;stop-opacity:0.9" />
+                            <stop offset="100%" style="stop-color:#ccc;stop-opacity:0.6" />
+                        </radialGradient>
+                    </defs>
+
+                    <rect x="0" y="0" width="760" height="230" fill="#2c1b18" />
+                    
+                    <rect v-for="i in 16" :key="'f'+i" :x="i * 45 - 2" y="10" width="4" height="180" fill="url(#fretGradient)" />
+                    
+                    <rect v-if="displayRange.min === 0" x="0" y="10" width="10" height="180" fill="#e8e6d1" />
+                    
+                    <g v-for="i in 16" :key="'mk'+i">
+                        <circle v-if="[3,5,7,9,15,17,19,21].includes(i + displayRange.min - 1)" 
+                                :cx="i * 45 - 22.5" cy="100" r="6" fill="url(#inlayGradient)" />
+                        <g v-if="[12, 24].includes(i + displayRange.min - 1)">
+                            <circle :cx="i * 45 - 22.5" cy="55" r="6" fill="url(#inlayGradient)" />
+                            <circle :cx="i * 45 - 22.5" cy="145" r="6" fill="url(#inlayGradient)" />
+                        </g>
+                    </g>
+            
+                    <line v-for="(s, index) in 6" :key="'shad'+index" x1="0" :y1="32 + index * 28" x2="760" :y2="32 + index * 28" stroke="rgba(0,0,0,0.5)" :stroke-width="index * 0.6 + 1" />
+                    <line v-for="(s, index) in 6" :key="'str'+index" x1="0" :y1="30 + index * 28" x2="760" :y2="30 + index * 28" :stroke="index < 2 ? '#d0d0d0' : '#a0a0a0'" :stroke-width="index * 0.5 + 1" />
+            
+                    <g v-for="k in 16" :key="'lbl'+k">
+                        <text v-if="k===1 && displayRange.min===0" :x="10" y="220" text-anchor="middle" fill="#c5a059" font-size="14" font-family="Montserrat" font-weight="bold">0</text>
+                        <text v-else :x="k * 45 - 22.5" y="220" text-anchor="middle" fill="#888" font-size="12" font-family="Montserrat">
+                            {{ k + displayRange.min - 1 }}
+                        </text>
+                    </g>
+            
                     <g v-for="(dot, idx) in fretboardDots" :key="'dot'+idx">
-                        <circle v-if="dot.isTarget || dot.isRoot" :cx="(dot.fret - displayRange.min) * 45 - 22.5" :cy="30 + dot.string * 28" :r="14" :fill="dot.isTarget ? 'rgba(239, 68, 68, 0.1)' : 'rgba(197, 160, 89, 0.1)'" />
-                        <circle :cx="(dot.fret - displayRange.min) * 45 - 22.5" :cy="30 + dot.string * 28" :r="dot.r" :fill="dot.fill" :stroke="dot.stroke" :stroke-width="dot.strokeWidth || 2" class="interactive-dot" @click="handleShot(dot)" />
-                        <text v-if="dot.showLabel" :x="(dot.fret - displayRange.min) * 45 - 22.5" :y="30 + dot.string * 28 + 4" text-anchor="middle" :fill="dot.textFill" font-size="10px" font-family="Montserrat" font-weight="bold" pointer-events="none">{{ dot.degree }}</text>
+                        <circle v-if="(dot.isRoot && difficulty === 'easy') || (dot.isTarget && revealed)" 
+                                :cx="(dot.fret - displayRange.min + 1) * 45 - 22.5" 
+                                :cy="30 + dot.string * 28" 
+                                :r="14" 
+                                :fill="dot.isTarget ? 'rgba(239, 68, 68, 0.4)' : 'rgba(197, 160, 89, 0.4)'" />
+                        
+                        <circle :cx="(dot.fret - displayRange.min + 1) * 45 - 22.5" 
+                                :cy="30 + dot.string * 28" 
+                                :r="dot.r" 
+                                :fill="dot.fill" 
+                                :stroke="dot.stroke" 
+                                :stroke-width="dot.strokeWidth || 2" 
+                                class="interactive-dot" 
+                                @click="handleShot(dot)" />
+                        
+                        <text v-if="dot.showLabel" :x="(dot.fret - displayRange.min + 1) * 45 - 22.5" :y="30 + dot.string * 28 + 4" text-anchor="middle" :fill="dot.textFill" font-size="10px" font-family="Montserrat" font-weight="bold" pointer-events="none">{{ dot.degree }}</text>
                     </g>
                 </svg>
             </div>
+
             <div style="text-align:center;">
                 <button class="btn btn-secondary" @click="endSession">End Session (ESC)</button>
             </div>
@@ -541,7 +569,18 @@
                     </div>
 
                     <div class="help-section">
-                        <h3>4. Theory Reference</h3>
+                        <h3>4. Interface & Settings</h3>
+                        <p>画面右上の ⚙️ アイコンから設定メニューを開けます。</p>
+                        <table class="help-table">
+                            <tr><th>🔊 Sound FX</th><td>正解音・ミス音のON/OFF切り替え</td></tr>
+                            <tr><th>💡 Theory Tips</th><td>コード構成音の解説表示ON/OFF</td></tr>
+                            <tr><th>⏳ Timer</th><td>制限時間の有無 (Normal/Hardのみ)</td></tr>
+                            <tr><th>💾 Data</th><td>セーブデータのバックアップ(Backup)と読み込み(Import)、初期化(Reset)</td></tr>
+                        </table>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>5. Theory Reference</h3>
                         <p>ターゲットとなる度数（Interval）の意味一覧です。</p>
                         <table class="help-table">
                             <tr><th>M3 (3)</th><td>メジャーコードの明るさを決定づける音</td></tr>
@@ -701,30 +740,26 @@
         async init() {
             if (this.isInitialized) return;
             
-            await Tone.start(); // ユーザー操作をトリガーにAudioContextを開始
+            await Tone.start(); 
 
-            // ジャズギター風の甘いトーンを作る設定
             this.synth = new Tone.PolySynth(Tone.Synth, {
                 maxPolyphony: 6, 
                 options: {
-                    oscillator: { type: "triangle" }, // 丸い音
+                    oscillator: { type: "triangle" }, 
                     envelope: {
                         attack: 0.02, decay: 0.3, sustain: 0.3, release: 1.2
                     }
                 }
             });
 
-            // "Jazz Club" の雰囲気を出すリバーブ
             this.reverb = new Tone.Reverb({
                 decay: 2.5, preDelay: 0.1, wet: 0.3
             }).toDestination();
 
-            // フィルター（トーンノブを絞った感じ）
             this.filter = new Tone.Filter(800, "lowpass").connect(this.reverb);
             this.synth.connect(this.filter);
             
-            // 音量調整
-            this.synth.volume.value = -8; 
+            this.synth.volume.value = -20; 
             
             this.isInitialized = true;
             console.log("Tone.js Audio Engine Initialized");
@@ -746,7 +781,7 @@
 
         sfxSuccess() { 
             if(!this.enabled) return;
-            this.play([523.25, 659.25, 783.99, 1046.50], null, 0.4); // C Major
+            this.play([523.25, 659.25, 783.99, 1046.50], null, 0.4); 
         }
 
         sfxCombo(count) { 
@@ -760,7 +795,7 @@
             if (this.isInitialized) {
                 const noise = new Tone.MembraneSynth().toDestination();
                 noise.triggerAttackRelease("C1", "8n");
-                noise.volume.value = -5;
+                noise.volume.value = -20;
             }
         }
 
@@ -911,29 +946,43 @@
             const feedback = ref({msg:'', sub:'', color:''});
             const timerWidth = ref(100);
             const isProcessing = ref(false);
+            
+            // --- FIX FOR BUG: Game continuing after exit ---
             let timerInterval = null;
+            let nextQuestionTimeout = null; 
+            // -----------------------------------------------
+            
+            const revealed = ref(false);
+            const ingameRankUp = ref(false);
+            const lastRankIndex = ref(0);
             
             const currentSong = ref(null);
             const songIndex = ref(0);
 
             const comboMultiplier = computed(() => Math.min(combo.value, 50) || 1);
             
+            const currentTotalScore = computed(() => stats.totalScore + sessionScore.value);
+
             const currentRankInfo = computed(() => {
                 let current = RANKS[0];
                 let next = RANKS[1];
+                let idx = 0;
+                // Use currentTotalScore instead of just stats.totalScore
                 for(let i=0; i<RANKS.length-1; i++) {
-                    if (stats.totalScore >= RANKS[i].limit) {
+                    if (currentTotalScore.value >= RANKS[i].limit) {
                         current = RANKS[i+1];
-                        next = RANKS[i+2] || { limit: stats.totalScore * 1.5 };
+                        next = RANKS[i+2] || { limit: currentTotalScore.value * 1.5 };
+                        idx = i+1;
                     } else {
                         current = RANKS[i];
                         next = RANKS[i+1];
+                        idx = i;
                         break;
                     }
                 }
                 const prevLimit = RANKS.indexOf(current) > 0 ? RANKS[RANKS.indexOf(current)-1].limit : 0;
-                const progress = Math.min(100, Math.max(0, ((stats.totalScore - prevLimit) / (current.limit - prevLimit)) * 100));
-                return { name: current.name, progress, nextReq: current.limit };
+                const progress = Math.min(100, Math.max(0, ((currentTotalScore.value - prevLimit) / (current.limit - prevLimit)) * 100));
+                return { name: current.name, progress, nextReq: current.limit, index: idx };
             });
 
             const statsOverview = computed(() => {
@@ -1092,6 +1141,7 @@
                 combo.value = 0;
                 maxCombo.value = 0;
                 perfect10.value = false;
+                lastRankIndex.value = currentRankInfo.value.index; // Track starting rank index
                 
                 if (mode === 'song' && songData) {
                     currentSong.value = songData;
@@ -1104,7 +1154,11 @@
             const startSongMode = (song) => startGame('song', song);
 
             const nextQuestion = () => {
+                // BUG FIX: Prevent next question if game has ended
+                if (currentView.value !== 'game') return;
+
                 isProcessing.value = false;
+                revealed.value = false; 
                 feedback.value = { msg: '' };
                 let q = {};
                 
@@ -1130,11 +1184,14 @@
                     const targets = q.intervals.filter(i => i !== 0); 
                     q.targetInterval = targets[Math.floor(Math.random() * targets.length)];
                     q.targetDegreeName = {3:'b3',4:'3',6:'b5',7:'5',10:'b7',11:'7'}[q.targetInterval];
+                    
                     const conf = shapeConfig[shape];
-                    let baseFret = (q.chordRootVal - tuning[conf.rootStrIdx] + 12) % 12;
-                    if (baseFret < 3) baseFret += 12;
-                    q.minF = baseFret + conf.offset;
-                    q.maxF = q.minF + conf.span;
+                    let rootPos = (q.chordRootVal - tuning[conf.rootStrIdx] + 12) % 12;
+                    if (rootPos + conf.offset < 0) {
+                        rootPos += 12;
+                    }
+                    q.minF = rootPos + conf.offset;
+                    q.maxF = q.minF + 5;
                 } else {
                     let keyRoot;
                     let keyName = selectedKey.value;
@@ -1159,14 +1216,18 @@
                     let shape = selectedShape.value;
                     if (shape === 'ALL') shape = ['C','A','G','E','D'][Math.floor(Math.random()*5)];
                     q.shape = shape;
-                    const conf = shapeConfig[shape];
-                    let baseFret = (q.chordRootVal - tuning[conf.rootStrIdx] + 12) % 12;
-                    if (baseFret < 3) baseFret += 12;
-                    q.minF = baseFret + conf.offset;
-                    q.maxF = q.minF + conf.span;
+                    
                     const targets = q.intervals.filter(i => i !== 0); 
                     q.targetInterval = targets[Math.floor(Math.random() * targets.length)];
                     q.targetDegreeName = {3:'b3',4:'3',6:'b5',7:'5',10:'b7',11:'7'}[q.targetInterval];
+                    
+                    const conf = shapeConfig[shape];
+                    let rootPos = (q.chordRootVal - tuning[conf.rootStrIdx] + 12) % 12;
+                    if (rootPos + conf.offset < 0) {
+                        rootPos += 12;
+                    }
+                    q.minF = rootPos + conf.offset;
+                    q.maxF = q.minF + 5;
                 }
 
                 currentQuestion.value = q;
@@ -1177,7 +1238,9 @@
                         const note = (tuning[s] + f) % 12;
                         const interval = (note - q.chordRootVal + 12) % 12;
                         if (q.intervals.includes(interval)) {
+                            // GUIDE: Only for EASY mode + Root note
                             let isRootGuide = (difficulty.value === 'easy' && interval === 0);
+                            
                             fretboardDots.value.push({
                                 string: s, fret: f, interval: interval,
                                 degree: {0:'R',3:'b3',4:'3',5:'4',6:'b5',7:'5',10:'b7',11:'7'}[interval],
@@ -1190,8 +1253,9 @@
                 }
 
                 clearInterval(timerInterval);
-                if (settings.timerEnabled && difficulty.value !== 'easy' && gameMode.value !== 'srs') {
-                    const timeLimit = difficulty.value === 'hard' ? 4 : 8;
+                if (settings.timerEnabled && difficulty.value !== 'hard' && difficulty.value !== 'easy' && gameMode.value !== 'srs') {
+                    // Normal timer
+                    const timeLimit = 8;
                     let remain = timeLimit;
                     timerWidth.value = 100;
                     timerInterval = setInterval(() => {
@@ -1199,13 +1263,24 @@
                         timerWidth.value = (remain / timeLimit) * 100;
                         if (remain <= 0) handleShot(null, true);
                     }, 50);
-                } else { timerWidth.value = 100; }
+                } else if (settings.timerEnabled && difficulty.value === 'hard') {
+                    const timeLimit = 4;
+                    let remain = timeLimit;
+                    timerWidth.value = 100;
+                    timerInterval = setInterval(() => {
+                        remain -= 0.05;
+                        timerWidth.value = (remain / timeLimit) * 100;
+                        if (remain <= 0) handleShot(null, true);
+                    }, 50);
+                }
+                 else { timerWidth.value = 100; }
             };
 
             const handleShot = (dot, timeUp) => {
                 if (isProcessing.value) return;
                 clearInterval(timerInterval);
                 isProcessing.value = true;
+                revealed.value = true; 
                 const q = currentQuestion.value;
                 const isCorrect = !timeUp && dot && dot.isTarget;
 
@@ -1262,6 +1337,14 @@
                     const pts = (difficulty.value === 'hard' ? 200 : 100) * comboMultiplier.value;
                     sessionScore.value += pts;
                     
+                    // CHECK FOR IN-GAME RANK UP
+                    if (currentRankInfo.value.index > lastRankIndex.value) {
+                        lastRankIndex.value = currentRankInfo.value.index;
+                        ingameRankUp.value = true;
+                        audio.sfxRankUp();
+                        setTimeout(() => ingameRankUp.value = false, 2500);
+                    }
+
                     feedback.value = { msg: getFeedbackMessage(combo.value), sub: `+${pts}`, color: '#c5a059' };
                     if(dot) { dot.fill = '#c5a059'; dot.showLabel = true; }
 
@@ -1291,11 +1374,16 @@
                     });
                 }
                 saveData();
-                setTimeout(nextQuestion, isCorrect ? 800 : 2000);
+                
+                // BUG FIX: Clear existing timeout before setting new one
+                if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+                nextQuestionTimeout = setTimeout(nextQuestion, isCorrect ? 800 : 2000);
             };
 
             const endSession = () => {
                 clearInterval(timerInterval);
+                if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout); // BUG FIX: Cancel pending transition
+
                 if (sessionScore.value > 0) {
                     const oldRank = currentRankInfo.value.name;
                     const sessionAccuracy = (() => {
@@ -1308,10 +1396,6 @@
                     if (stats.playHistory.length > 20) stats.playHistory.pop();
                     stats.totalScore += sessionScore.value;
                     
-                    if (oldRank !== currentRankInfo.value.name) {
-                        showRankUp.value = true;
-                        audio.sfxRankUp();
-                    }
                     checkAchievements(); 
                 }
                 saveData();
@@ -1420,7 +1504,8 @@
                 showSettings, settings, exportData, importData, resetData,
                 dailyMission, srsDueCount, showHelp, showRankUp,
                 showSongSelect, filteredSongs, searchQuery, getHeatmapColor,
-                currentSong, songIndex, gameMode, nextChordName, statsOverview
+                currentSong, songIndex, gameMode, nextChordName, statsOverview,
+                revealed, ingameRankUp // EXPOSE NEW STATES
             };
         }
     }).mount('#app');
